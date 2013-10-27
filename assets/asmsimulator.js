@@ -117,7 +117,7 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
             for(var i = 0, l = lines.length; i < l; i++) {
                 try {
                     var match = regex.exec(lines[i]);
-                    if (match) {
+                    if (match[1] !== undefined || match[2] !== undefined) {
                         if (match[1] !== undefined) {
                             addLabel(match[1]);
                         }
@@ -497,7 +497,8 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
                         }
                     } else {
                         // Check if line starts with a comment otherwise the line contains an error and can not be parsed
-                        if (lines[i].trim().slice(0,1) !== ";") {
+                        var line = lines[i].trim();
+                        if (line !== "" && line.slice(0,1) !== ";") {
                             throw "Syntax error";
                         }
                     }
@@ -512,7 +513,8 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
                     if (code[i] in labels) {
                         code[i] = labels[code[i]];
                     } else {
-                        throw "Undefined label: " + code[i];
+
+                        throw { error: "Undefined label: " + code[i] };
                     }
                 }
             }
@@ -1251,8 +1253,12 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
                 memory.data[i] = binary[i];
             }
         } catch (e) {
-            $scope.error = e.line + " | " + e.error;
-            $scope.selectedLine = e.line;
+            if (e.line !== undefined) {
+                $scope.error = e.line + " | " + e.error;
+                $scope.selectedLine = e.line;
+            } else {
+                $scope.error = e.error;
+            }
         }
     };
 }]);;app.filter('flag', function() {
