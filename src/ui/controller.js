@@ -82,8 +82,12 @@ app.controller('Ctrl', ['$scope', '$timeout', 'cpu', 'memory', 'assembler', func
                 memory.data[i] = binary[i];
             }
         } catch (e) {
-            $scope.error = e.line + " | " + e.error;
-            $scope.selectedLine = e.line;
+            if (e.line !== undefined) {
+                $scope.error = e.line + " | " + e.error;
+                $scope.selectedLine = e.line;
+            } else {
+                $scope.error = e.error;
+            }
         }
     };
 }]);
