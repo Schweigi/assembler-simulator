@@ -1,0 +1,34 @@
+.source-code {
+    font-family: source-code-pro, Courier New;
+}
+
+.output, .output-bg {
+    background-color:#DFDFDF;
+}
+
+.output {
+    width: 1em;
+    margin-right:1px;
+    margin-bottom:1px;
+    text-align:center;
+}
+
+.memory-block {
+    width:1.8em;
+    display:inline-block;
+    text-align:center;
+}
+
+.marker-ip {
+    width:1.8em;
+    background-color:#428BCA;
+    color:#FFFFFF;
+    border-radius:2px;
+}
+
+.marker-sp {
+    width:1.8em;
+    background-color:#EEA236;
+    color:#FFFFFF;
+    border-radius:2px;
+}

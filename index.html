@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html ng-app="ASMSimulator">
+<head>
+    <title>Simple 8-bit Assembler Simulator in Javascript</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/style.css">
+    <script type="text/javascript" src="//use.typekit.net/tor0zlh.js"></script>
+    <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+</head>
+<body ng-controller="Ctrl">
+    <a href="https://github.com/you"><img style="z-index:1001;position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+    <nav class="navbar navbar-inverse" role="navigation" style="background-color:#428BCA;border:0px;border-radius:0px;">
+        <div class="container">
+            <div class="navbar-header">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-success navbar-btn" ng-click="run()" ng-hide="isRunning"><span class="glyphicon glyphicon-play"></span> Run</button>
+                    <button type="button" class="btn btn-default navbar-btn" ng-click="stop()" ng-show="isRunning"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+                    <button type="button" class="btn btn-default navbar-btn" ng-click="executeStep()" ng-disabled="isRunning"><span class="glyphicon glyphicon-forward"></span> Step</button>
+                </div>
+                <button type="button" class="btn btn-default navbar-btn" ng-click="reset()">Reset</button>
+                <button data-toggle="modal" href="#helpModal" class="btn btn-info navbar-btn">Help</button>
+            </div>
+            <div class="navbar-header navbar-right">
+                <a class="navbar-brand" style="color:#FFFFFF">Simple 8-bit Assembler Simulator</a>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="alert alert-danger" ng-hide="error === ''">{{ error }}</div>
+        <div class="row">
+            <div class="col-lg-7 col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Code</h4>
+                    </div>
+                    <div class="panel-body">
+                        <form role="form">
+                            <textarea class="form-control source-code"
+                                      rows="14"
+                                      style="margin-bottom:5px;"
+                                      tab-support
+                                      select-line
+                                      ng-model="code"></textarea>
+                            <button type="button" class="btn btn-default" ng-click="assemble()">Assemble</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Output</h4>
+                    </div>
+                    <div class="panel-body source-code">
+                        <div style="float:left;" class="output"
+                             ng-style="($index % 8 === 0 && {'clear': 'left'}) || {'float': 'left'}"
+                             ng-repeat="m in memory.data | startFrom: 232 track by $index">
+                            <span>{{ getChar(m) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="clearfix visible-xs visible-sm"></div>
+            <div class="col-lg-5 col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">CPU & Memory</h4>
+                    </div>
+                    <div class="panel-body">
+                        <p class="text-muted">Registers / Flags</p>
+                        <table class="table table-condensed table-striped">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:center">A</th>
+                                    <th style="text-align:center">B</th>
+                                    <th style="text-align:center">C</th>
+                                    <th style="text-align:center">D</th>
+                                    <th style="text-align:center">IP</th>
+                                    <th style="text-align:center">SP</th>
+                                    <th style="text-align:center">Z</th>
+                                    <th style="text-align:center">C</th>
+                                    <th style="text-align:center">F</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="text-align:center;" class="source-code">
+                                    <td><small>{{ cpu.gpr[0] | number:displayHex }}</small></td>
+                                    <td><small>{{ cpu.gpr[1] | number:displayHex }}</small></td>
+                                    <td><small>{{ cpu.gpr[2] | number:displayHex }}</small></td>
+                                    <td><small>{{ cpu.gpr[3] | number:displayHex }}</small></td>
+                                    <td><div style="margin:auto;" class="marker-ip"><small>{{ cpu.ip | number:displayHex }}</small></div></td>
+                                    <td><div style="margin:auto;" class="marker-sp"><small>{{ cpu.sp | number:displayHex }}</small></div></td>
+                                    <td><small>{{ cpu.zero | flag }}</small></td>
+                                    <td><small>{{ cpu.carry | flag }}</small></td>
+                                    <td><small>{{ cpu.fault | flag }}</small></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="text-muted">RAM</p>
+                        <div style="width:29em;" class="source-code">
+                            <div class="memory-block"
+                                 ng-repeat="m in memory.data track by $index"
+                                 ng-class="($index >= 232 && 'output-bg' || '')">
+                                 <div ng-class="(cpu.ip === $index && 'marker-ip' || (cpu.sp === $index && 'marker-sp' || ''))">
+                                    <small>{{ m | number:displayHex }}</small>
+                                 </div>
+                            </div>
+                        </div>
+                        <p style="margin-top:5px;">
+                            <small>
+                                View:
+                                <a ng-click="displayHex = true" ng-hide="displayHex">Hex</a>
+                                <a ng-click="displayHex = false" ng-show="displayHex">Decimal</a>
+                                Clock speed:
+                                <select ng-model="speed" ng-options="item.speed as item.desc for item in speeds"></select>
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr style="margin-top:10px;margin-bottom:10px;"/>
+        <p><small>by Marco Schweighauser (2013) | MIT License</small></p>
+        <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Assembler Help</h4>
+                    </div>
+                    <div class="modal-body">
+                        <h4>Introduction</h4>
+                        <p>This simulator provides a simplified assembler syntax (based on <a href="http://www.nasm.us" target="_blank">NASM</a>) and is simulating a x86 like cpu. In depth documentation and introduction to assembler can be found on the following websites:</p>
+                        <ul>
+                            <li><a href="http://en.wikipedia.org/wiki/Assembly_language" target="_blank">Assembly - Wikipedia</a></li>
+                            <li><a href="http://cs.smith.edu/~thiebaut/ArtOfAssembly/artofasm.html" target="_blank">The Art of Assembly Language Programming</a></li>
+                            <li><a href="http://www.nasm.us/xdoc/2.10.09/html/nasmdoc3.html" target="_blank">NASM Language Documentation</a></li>
+                        </ul>
+                        <p>The simulator consists of a 8-bit cpu and 256 bytes of memory. All instructions (code) and variables (data) needs to fit inside the memory. For simplicity every instruction (and operand) is 1 byte. Therefore a MOV instruction will use 3 bytes of memory. The simulator provides a console output which is memory mapped from 0xE8 to 0xFF. Memory mapped means that every value written to this memory block is visible on the console.</p>
+                        <h4>Syntax</h4>
+                        <p>The syntax is similar as most assemblers are using. Every instruction must be on their own line. Labels are optional and must either start with a letter or a dot (.) and end with a colon.</p>
+                        <pre>label: instruction operands	; Comment</pre>
+                        <p>Valid number formats for constants are:</p>
+<pre>
+Decimal: 200
+Decimal: 200d
+Hex: 0xA4
+Octal: 0o48
+Binary: 101b
+</pre>
+                        <p>It is possible to define a number using a character or multiple numbers (see instruction <i>DB</i>) by using a string.</p>
+<pre>
+Character: 'A'
+String: "Hello World!"
+</pre>
+                        <p>Operands can either be one of the four general purpose registers, a memory address or a constant. Instead of defining an address as a constant or by using a register you can use labels. The assembler will then replace the label with the corresponding constant.</p>
+<pre>
+Register: A, B, C, D
+Address using a register: [A]
+Address using a constant: [100]
+Address using a label: label
+Constant: Any number between 0-255 (8bit unsigned)
+</pre>
+                        <h4>MOV - Copy a value</h4>
+                        <p>Copies a value from <i>src</i> to <i>dest</i>. The MOV instruction is the only one able to directly modify the memory.</p>
+<pre>
+MOV reg, reg
+MOV reg, address
+MOV reg, constant
+MOV address, reg
+MOV address, constant
+</pre>
+                        <h4>DB - Variable</h4>
+                        <p>Defines a variable. A variable can either be a single number, character or a string.</p>
+<pre>
+DB constant
+</pre>
+                        <h4>Math operations</h4>
+                        <b>Addition and Subtraction</b>
+                        <p>Adds two numbers together or subtract one number form another. This operations will modify the carry and zero flag.</p>
+<pre>
+ADD reg, reg
+ADD reg, address
+ADD reg, constant
+SUB reg, reg
+SUB reg, address
+SUB reg, constant
+</pre>
+                        <b>Increment and Decrement</b>
+                        <p>Increments or decrements a register by one. This operations will modify the carry and zero flag.</p>
+<pre>
+INC reg
+DEC reg
+</pre>
+                        <b>Multiplication and division</b>
+                        <p>Multiplies or divides the <i>A</i> register with the given value. This operations will modify the carry and zero flag.</p>
+<pre>
+MUL reg
+MUL address
+MUL constant
+DIV reg
+DIV address
+DIV constant
+</pre>
+                        <b>Logical instructions</b>
+                        <p>The following logical instructions are supported: AND, OR, XOR, NOT. This operations will modify the carry and zero flag.</p>
+<pre>
+AND reg, reg
+AND reg, address
+AND reg, constant
+OR reg, reg
+OR reg, address
+OR reg, constant
+XOR reg, reg
+XOR reg, address
+XOR reg, constant
+NOT reg
+</pre>
+                        <b>Shift instructions</b>
+                        <p>The following shift instructions are supported: SHL/SAL and SHR/SAR. As this simulator only supports unsigned numbers SHR and SAR yield the same result. This operations will modify the carry and zero flag.</p>
+<pre>
+SHL reg, reg
+SHL reg, address
+SHL reg, constant
+SHR reg, reg
+SHR reg, address
+SHR reg, constant
+</pre>
+                        <h4>CMP - Compare</h4>
+                        <p>Compares two values and sets the zero flag to true if they are equal. Use this instruction before a conditional jump.</p>
+<pre>
+CMP reg, reg
+CMP reg, address
+CMP reg, constant
+</pre>
+                        <h4>Jumps</h4>
+                        <b>JMP - Unconditional jump</b>
+                        <p>Let the instruction pointer do a unconditional jump to the defined address.</p>
+<pre>
+JMP address
+</pre>
+                        <b>Conditional jumps</b>
+                        <p>Let the instruction pointer do a conditional jump to the defined address. See the table below for the available conditions.</p>
+                        <table class="table table-condensed table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Instruction</th>
+                                    <th>Description</th>
+                                    <th>Condition</th>
+                                    <th>Alternatives</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>JC</td>
+                                    <td>Jump if carry</td>
+                                    <td>Carry = TRUE</td>
+                                    <td>JB, JNAE</td>
+                                </tr>
+                                <tr>
+                                    <td>JNC</td>
+                                    <td>Jump if no carry</td>
+                                    <td>Carry = FALSE</td>
+                                    <td>JNB, JAE</td>
+                                </tr>
+                                <tr>
+                                    <td>JZ</td>
+                                    <td>Jump if zero</td>
+                                    <td>Zero = TRUE</td>
+                                    <td>JB, JE</td>
+                                </tr>
+                                <tr>
+                                    <td>JNZ</td>
+                                    <td>Jump if no zero</td>
+                                    <td>Zero = FALSE</td>
+                                    <td>JNE</td>
+                                </tr>
+                                <tr>
+                                    <td>JA</td>
+                                    <td>&gt;</td>
+                                    <td>C = FALSE && Z = FALSE</td>
+                                    <td>JNBE</td>
+                                </tr>
+                                <tr>
+                                    <td>JNBE</td>
+                                    <td>not &lt;=</td>
+                                    <td>C = FALSE && Z = FALSE</td>
+                                    <td>JA</td>
+                                </tr>
+                                <tr>
+                                    <td>JAE</td>
+                                    <td>&gt;=</td>
+                                    <td>Carry = FALSE</td>
+                                    <td>JNC, JNB</td>
+                                </tr>
+                                <tr>
+                                    <td>JNB</td>
+                                    <td>not &lt;</td>
+                                    <td>Carry = FALSE</td>
+                                    <td>JNC, JAE</td>
+                                </tr>
+                                <tr>
+                                    <td>JB</td>
+                                    <td>&lt;</td>
+                                    <td>Carry = TRUE</td>
+                                    <td>JC, JNAE</td>
+                                </tr>
+                                <tr>
+                                    <td>JNAE</td>
+                                    <td>not &gt;=</td>
+                                    <td>Carry = TRUE</td>
+                                    <td>JC, JB</td>
+                                </tr>
+                                <tr>
+                                    <td>JBE</td>
+                                    <td>&lt;=</td>
+                                    <td>C = TRUE or Z = TRUE</td>
+                                    <td>JNA</td>
+                                </tr>
+                                <tr>
+                                    <td>JNA</td>
+                                    <td>not &gt;</td>
+                                    <td>C = TRUE or Z = TRUE</td>
+                                    <td>JBE</td>
+                                </tr>
+                                <tr>
+                                    <td>JE</td>
+                                    <td>=</td>
+                                    <td>Z = TRUE</td>
+                                    <td>JZ</td>
+                                </tr>
+                                <tr>
+                                    <td>JNE</td>
+                                    <td>!=</td>
+                                    <td>Z = FALSE</td>
+                                    <td>JNZ</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <b>CALL - Function call</b>
+                        <p>Call can be used to jump into a subroutine (function). Pushes the instruction address of the next instruction to the stack and jumps to the specified address.</p>
+<pre>
+CALL address
+</pre>
+                        <b>RET - Exit a subroutine</b>
+                        <p>Exits a subroutines by popping the return address previously pushed by the CALL instruction. Make sure the SP is balanced before calling RET otherwise the instruction pointer will have an ambiguous value.</p>
+<pre>
+RET
+</pre>
+                        <h4>Stack instructions</h4>
+                        <b>PUSH - Push to stack</b>
+                        <p>Pushes a value to the stack. The stack grows down and the current position is available in the stack pointer register (SP). This instruction will decrease the SP.</p>
+<pre>
+PUSH reg
+PUSH address
+PUSH constant
+</pre>
+                        <b>POP - Pop from stack</b>
+                        <p>Pops a value from the stack to a register. This instruction will increase the SP.</p>
+<pre>
+POP reg
+</pre>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0-rc.3/angular.js"></script>
+    <script src="assets/asmsimulator.js"></script>
+</body>
+</html>
