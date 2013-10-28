@@ -4,6 +4,7 @@ app.controller('Ctrl', ['$scope', '$timeout', 'cpu', 'memory', 'assembler', func
     $scope.error = '';
     $scope.isRunning = false;
     $scope.displayHex = true;
+    $scope.displayInstr = true;
     $scope.speeds = [{speed:1, desc:"1 HZ"}, {speed:4, desc:"4 HZ"}, {speed:8, desc:"8 HZ"}, {speed:16, desc:"16 HZ"}];
     $scope.speed = 4;
 
@@ -22,7 +23,15 @@ app.controller('Ctrl', ['$scope', '$timeout', 'cpu', 'memory', 'assembler', func
         }
 
         try {
-            return cpu.step();
+            // Execute
+            var res = cpu.step();
+
+            // Mark in code
+            if (cpu.ip in $scope.mapping) {
+                $scope.selectedLine = $scope.mapping[cpu.ip];
+            }
+
+            return res;
         } catch (e) {
             $scope.error = e;
             return false;
@@ -74,7 +83,10 @@ app.controller('Ctrl', ['$scope', '$timeout', 'cpu', 'memory', 'assembler', func
         try {
             $scope.reset();
 
-            var binary = assembler.go($scope.code);
+            var assembly = assembler.go($scope.code);
+            $scope.mapping = assembly.mapping;
+            var binary = assembly.code;
+
             if (binary.length > memory.data.length)
                 throw "Binary code does not fit into the memory. Max " + memory.data.length + " bytes are allowed";
 
