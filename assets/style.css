@@ -13,6 +13,10 @@
     text-align:center;
 }
 
+.instr-bg {
+    background-color:#E6F3FF;
+}
+
 .memory-block {
     width:1.8em;
     display:inline-block;
