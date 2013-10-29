@@ -1,133 +1,17 @@
 <!DOCTYPE html>
-<html ng-app="ASMSimulator">
+<html>
 <head>
-    <title>Simple 8-bit Assembler Simulator in Javascript</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Simple 8-bit Assembler Instruction Set</title>
     <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/style.css">
     <script type="text/javascript" src="//use.typekit.net/tor0zlh.js"></script>
     <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
 </head>
-<body ng-controller="Ctrl">
-    <a href="https://github.com/Schweigi/assembler-simulator"><img style="z-index:1001;position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
-    <nav class="navbar navbar-inverse" role="navigation" style="background-color:#428BCA;border:0px;border-radius:0px;">
-        <div class="container">
-            <div class="navbar-header">
-                <div class="btn-group">
-                    <button type="button" class="btn btn-success navbar-btn" ng-click="run()" ng-hide="isRunning"><span class="glyphicon glyphicon-play"></span> Run</button>
-                    <button type="button" class="btn btn-default navbar-btn" ng-click="stop()" ng-show="isRunning"><span class="glyphicon glyphicon-stop"></span> Stop</button>
-                    <button type="button" class="btn btn-default navbar-btn" ng-click="executeStep()" ng-disabled="isRunning"><span class="glyphicon glyphicon-forward"></span> Step</button>
-                </div>
-                <button type="button" class="btn btn-default navbar-btn" ng-click="reset()">Reset</button>
-                <button data-toggle="modal" href="#helpModal" class="btn btn-info navbar-btn">Help</button>
-            </div>
-            <div class="navbar-header navbar-right">
-                <a class="navbar-brand" style="color:#FFFFFF">Simple 8-bit Assembler Simulator</a>
-            </div>
-        </div>
-    </nav>
-    <div class="container">
-        <div class="alert alert-danger" ng-hide="error === ''">{{ error }}</div>
-        <div class="row">
-            <div class="col-lg-7 col-md-6">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title">Code (<a href="./instruction-set.html" target="_blank">Instruction Set</a>)</h4>
-                    </div>
-                    <div class="panel-body">
-                        <form role="form">
-                            <textarea class="form-control source-code"
-                                      rows="14"
-                                      style="margin-bottom:5px;"
-                                      tab-support
-                                      select-line
-                                      ng-model="code"></textarea>
-                            <button type="button" class="btn btn-default" ng-click="assemble()">Assemble</button>
-                        </form>
-                    </div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title">Output</h4>
-                    </div>
-                    <div class="panel-body source-code">
-                        <div style="float:left;" class="output"
-                             ng-style="($index % 8 === 0 && {'clear': 'left'}) || {'float': 'left'}"
-                             ng-repeat="m in memory.data | startFrom: 232 track by $index">
-                            <span>{{ getChar(m) }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="clearfix visible-xs visible-sm"></div>
-            <div class="col-lg-5 col-md-6">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title">CPU & Memory</h4>
-                    </div>
-                    <div class="panel-body">
-                        <p class="text-muted">Registers / Flags</p>
-                        <table class="table table-condensed table-striped">
-                            <thead>
-                                <tr>
-                                    <th style="text-align:center">A</th>
-                                    <th style="text-align:center">B</th>
-                                    <th style="text-align:center">C</th>
-                                    <th style="text-align:center">D</th>
-                                    <th style="text-align:center">IP</th>
-                                    <th style="text-align:center">SP</th>
-                                    <th style="text-align:center">Z</th>
-                                    <th style="text-align:center">C</th>
-                                    <th style="text-align:center">F</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr style="text-align:center;" class="source-code">
-                                    <td><small>{{ cpu.gpr[0] | number:displayHex }}</small></td>
-                                    <td><small>{{ cpu.gpr[1] | number:displayHex }}</small></td>
-                                    <td><small>{{ cpu.gpr[2] | number:displayHex }}</small></td>
-                                    <td><small>{{ cpu.gpr[3] | number:displayHex }}</small></td>
-                                    <td><div style="margin:auto;" class="marker-ip"><small>{{ cpu.ip | number:displayHex }}</small></div></td>
-                                    <td><div style="margin:auto;" class="marker-sp"><small>{{ cpu.sp | number:displayHex }}</small></div></td>
-                                    <td><small>{{ cpu.zero | flag }}</small></td>
-                                    <td><small>{{ cpu.carry | flag }}</small></td>
-                                    <td><small>{{ cpu.fault | flag }}</small></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <p class="text-muted">RAM</p>
-                        <div style="width:29em;" class="source-code">
-                            <div class="memory-block"
-                                 ng-repeat="m in memory.data track by $index"
-                                 ng-class="($index >= 232 && 'output-bg' || (mapping[$index] !== undefined && displayInstr && 'instr-bg' || ''))">
-                                 <div ng-class="(cpu.ip === $index && 'marker-ip' || (cpu.sp === $index && 'marker-sp' || ''))">
-                                    <small>{{ m | number:displayHex }}</small>
-                                 </div>
-                            </div>
-                        </div>
-                        <p style="margin-top:5px;">
-                            <small>
-                                <span>Clock speed:</span>
-                                <select ng-model="speed" ng-options="item.speed as item.desc for item in speeds"></select>
-                                <span style="margin-left:5px;">Instructions:</span>
-                                <a ng-click="displayInstr = true" ng-hide="displayInstr">Show</a>
-                                <a ng-click="displayInstr = false" ng-show="displayInstr">Hide</a>
-                                <span style="margin-left:5px;">View:</span>
-                                <a ng-click="displayHex = true" ng-hide="displayHex">Hex</a>
-                                <a ng-click="displayHex = false" ng-show="displayHex">Decimal</a>
-                            </small>
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <hr style="margin-top:10px;margin-bottom:10px;"/>
-        <p><small>by Marco Schweighauser (2013) | MIT License</small></p>
-        <div class="modal fade" id="helpModal" tabindex="-1" role="dialog" aria-hidden="true">
-            <div class="modal-dialog">
+<body>
+           <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                         <h4 class="modal-title">Assembler Help</h4>
                     </div>
                     <div class="modal-body">
@@ -363,13 +247,9 @@ PUSH constant
 POP reg
 </pre>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    </div>
                 </div><!-- /.modal-content -->
             </div><!-- /.modal-dialog -->
-        </div><!-- /.modal -->
-    </div>
+       
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     <script src="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0-rc.3/angular.js"></script>
