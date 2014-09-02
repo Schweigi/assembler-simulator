@@ -396,11 +396,11 @@ app.service('assembler', ['opcodes', function(opcodes) {
 
                                     if (p1.type === "register")
                                         opCode = opcodes.DIV_REG;
-                                    if (p1.type === "regaddress")
+                                    else if (p1.type === "regaddress")
                                         opCode = opcodes.DIV_REGADDRESS;
-                                    if (p1.type === "address")
+                                    else if (p1.type === "address")
                                         opCode = opcodes.DIV_ADDRESS;
-                                    if (p1.type === "number")
+                                    else if (p1.type === "number")
                                         opCode = opcodes.DIV_NUMBER;
                                     else
                                         throw "DIV does not support this operand";
