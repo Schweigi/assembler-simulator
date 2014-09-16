@@ -396,11 +396,11 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
 
                                     if (p1.type === "register")
                                         opCode = opcodes.DIV_REG;
-                                    if (p1.type === "regaddress")
+                                    else if (p1.type === "regaddress")
                                         opCode = opcodes.DIV_REGADDRESS;
-                                    if (p1.type === "address")
+                                    else if (p1.type === "address")
                                         opCode = opcodes.DIV_ADDRESS;
-                                    if (p1.type === "number")
+                                    else if (p1.type === "number")
                                         opCode = opcodes.DIV_NUMBER;
                                     else
                                         throw "DIV does not support this operand";
@@ -533,7 +533,8 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
             return { code: code, mapping: mapping };
         }
     };
-}]);;app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
+}]);
+;app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
     var cpu = {
         step: function() {
             var self = this;
