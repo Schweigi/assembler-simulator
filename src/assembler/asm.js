@@ -5,8 +5,10 @@ app.service('assembler', ['opcodes', function(opcodes) {
 
             // Use https://www.debuggex.com/
             // Matches: "label: INSTRUCTION (["')OPERAND1(]"'), (["')OPERAND2(]"')
-            // GROUPS:      1       2            3                 4
-            var regex = /^[\t ]*(?:([.A-Za-z]\w*)[:])?(?:[\t ]*([A-Za-z]{2,4})(?:[\t ]+(\[\w+\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*)(?:[\t ]*[,][\t ]*(\[\w+\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*))?)?)?/;
+            // GROUPS:      1       2                 3                 6
+			var regex = /^[\t ]*(?:([.A-Za-z]\w*)[:])?(?:[\t ]*([A-Za-z]{2,4})(?:[\t ]+(\[(\w+|SP(\+|-)\d+)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*)(?:[\t ]*[,][\t ]*(\[(\w+|SP(\+|-)\d+)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*))?)?)?/;
+			var op1_group=3;	// group indexes for operands
+			var op2_group=6;
             // MATCHES: "(+|-)INTEGER"
             var regexNum = /^[-+]?[0-9]+$/;
             // MATCHES: "(.L)abel"
@@ -53,7 +55,33 @@ app.service('assembler', ['opcodes', function(opcodes) {
                     return undefined;
                 }
             };
-            // Allowed: Register, Label or Number
+			
+			var parseSPAddressing=function(input) {
+				input = input.toUpperCase();
+				var m=0;
+				
+				if(input.slice(0,3) === "SP+") {
+					m=1;
+				} else if(input.slice(0,3) === "SP-") {
+					m=-1;
+				} else {
+					return undefined;
+				}
+				var offset = m*parseInt(input.slice(3),10);
+				
+				if (offset < -16 || offset > 15)
+					throw "offset must be a value between -16...+15";
+				
+				if (offset < 0) {
+                    // two's complement representation in 5-bit
+					offset=32+offset;
+				}
+
+                // shift offset 3 bits right and add 4 as code for SP register
+				return offset*8+4;
+			};
+			
+            // Allowed: Register, Label or Number; SP+/-Number is allowed for 'regaddress' type
             var parseRegOrNumber = function(input, typeReg, typeNumber) {
                 var register = parseRegister(input);
 
@@ -64,6 +92,15 @@ app.service('assembler', ['opcodes', function(opcodes) {
                     if (label !== undefined) {
                         return { type: typeNumber, value: label};
                     } else {
+						if (typeReg === "regaddress") {
+						
+							register = parseSPAddressing(input);
+						
+							if (register !== undefined) {
+								return { type: typeReg, value: register};
+							}
+						}
+						
                         var value = parseNumber(input);
 
                         if (isNaN(value)) {
@@ -118,6 +155,12 @@ app.service('assembler', ['opcodes', function(opcodes) {
 
                 labels[label] = code.length;
             };
+			
+			var checkNoExtraArg= function(instr, arg) {
+				if (arg !== undefined) {
+					throw instr+": too many arguments";
+				}
+			};
 
             for(var i = 0, l = lines.length; i < l; i++) {
                 try {
@@ -139,7 +182,7 @@ app.service('assembler', ['opcodes', function(opcodes) {
 
                             switch(instr) {
                                 case 'DB':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
 
                                     if (p1.type === "number")
                                         code.push(p1.value);
@@ -151,9 +194,15 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                         throw "DB does not support this operand";
 
                                     break;
+								case 'HLT':
+									checkNoExtraArg('HLT',match[op1_group]);
+									opCode=opcodes.NONE;
+									code.push(opCode);
+									break;
+									
                                 case 'MOV':
-                                    p1 = getValue(match[3]);
-                                    p2 = getValue(match[4]);
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
                                     
                                     if (p1.type === "register" && p2.type === "register")
                                         opCode = opcodes.MOV_REG_TO_REG;
@@ -177,8 +226,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value, p2.value);
                                     break;
                                 case 'ADD':
-                                    p1 = getValue(match[3]);
-                                    p2 = getValue(match[4]);
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
 
                                     if (p1.type === "register" && p2.type === "register")
                                         opCode = opcodes.ADD_REG_TO_REG;
@@ -194,8 +243,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value, p2.value);
                                     break;
                                 case 'SUB':
-                                    p1 = getValue(match[3]);
-                                    p2 = getValue(match[4]);
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
 
                                     if (p1.type === "register" && p2.type === "register")
                                         opCode = opcodes.SUB_REG_FROM_REG;
@@ -211,7 +260,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value, p2.value);
                                     break;
                                 case 'INC':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg('INC',match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.INC_REG;
@@ -222,7 +272,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
 
                                     break;
                                 case 'DEC':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg('DEC',match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.DEC_REG;
@@ -233,8 +284,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
 
                                     break;
                                 case 'CMP':
-                                    p1 = getValue(match[3]);
-                                    p2 = getValue(match[4]);
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
 
                                     if (p1.type === "register" && p2.type === "register")
                                         opCode = opcodes.CMP_REG_WITH_REG;
@@ -250,7 +301,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value, p2.value);
                                     break;
                                 case 'JMP':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg('JMP',match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.JMP_REGADDRESS;
@@ -262,7 +314,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'JC':case 'JB':case 'JNAE':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.JC_REGADDRESS;
@@ -274,7 +327,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'JNC':case 'JNB':case 'JAE':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.JNC_REGADDRESS;
@@ -286,7 +340,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'JZ': case 'JE':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.JZ_REGADDRESS;
@@ -298,7 +353,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'JNZ': case 'JNE':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.JNZ_REGADDRESS;
@@ -310,7 +366,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'JA': case 'JNBE':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.JA_REGADDRESS;
@@ -322,7 +379,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'JNA': case 'JBE':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.JNA_REGADDRESS;
@@ -334,7 +392,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'PUSH':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.PUSH_REG;
@@ -350,7 +409,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'POP':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.POP_REG;
@@ -360,7 +420,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'CALL':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.CALL_REGADDRESS;
@@ -372,11 +433,16 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'RET':
+									checkNoExtraArg(instr,match[op1_group]);
+
                                     opCode = opcodes.RET;
+
                                     code.push(opCode);
                                     break;
-                                case 'MUL':
-                                    p1 = getValue(match[3]);
+
+								case 'MUL':
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.MUL_REG;
@@ -392,7 +458,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'DIV':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.DIV_REG;
@@ -408,8 +475,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'AND':
-                                    p1 = getValue(match[3]);
-                                    p2 = getValue(match[4]);
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
 
                                     if (p1.type === "register" && p2.type === "register")
                                         opCode = opcodes.AND_REG_WITH_REG;
@@ -425,8 +492,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value, p2.value);
                                     break;
                                 case 'OR':
-                                    p1 = getValue(match[3]);
-                                    p2 = getValue(match[4]);
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
 
                                     if (p1.type === "register" && p2.type === "register")
                                         opCode = opcodes.OR_REG_WITH_REG;
@@ -442,8 +509,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value, p2.value);
                                     break;
                                 case 'XOR':
-                                    p1 = getValue(match[3]);
-                                    p2 = getValue(match[4]);
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
 
                                     if (p1.type === "register" && p2.type === "register")
                                         opCode = opcodes.XOR_REG_WITH_REG;
@@ -459,7 +526,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value, p2.value);
                                     break;
                                 case 'NOT':
-                                    p1 = getValue(match[3]);
+                                    p1 = getValue(match[op1_group]);
+									checkNoExtraArg(instr,match[op2_group]);
 
                                     if (p1.type === "register")
                                         opCode = opcodes.NOT_REG;
@@ -469,8 +537,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value);
                                     break;
                                 case 'SHL':case 'SAL':
-                                    p1 = getValue(match[3]);
-                                    p2 = getValue(match[4]);
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
 
                                     if (p1.type === "register" && p2.type === "register")
                                         opCode = opcodes.SHL_REG_WITH_REG;
@@ -486,8 +554,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
                                     code.push(opCode, p1.value, p2.value);
                                     break;
                                 case 'SHR': case 'SAR':
-                                    p1 = getValue(match[3]);
-                                    p2 = getValue(match[4]);
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
 
                                     if (p1.type === "register" && p2.type === "register")
                                         opCode = opcodes.SHR_REG_WITH_REG;
