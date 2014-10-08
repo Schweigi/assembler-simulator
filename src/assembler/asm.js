@@ -5,8 +5,7 @@ app.service('assembler', ['opcodes', function(opcodes) {
 
             // Use https://www.debuggex.com/
             // Matches: "label: INSTRUCTION (["')OPERAND1(]"'), (["')OPERAND2(]"')
-            // GROUPS:      1       2            3                 6
-            // var regex = /^[\t ]*(?:([.A-Za-z]\w*)[:])?(?:[\t ]*([A-Za-z]{2,4})(?:[\t ]+(\[\w+\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*)(?:[\t ]*[,][\t ]*(\[\w+\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*))?)?)?/;
+            // GROUPS:      1       2                 3                 6
 			var regex = /^[\t ]*(?:([.A-Za-z]\w*)[:])?(?:[\t ]*([A-Za-z]{2,4})(?:[\t ]+(\[(\w+|SP(\+|-)\d+)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*)(?:[\t ]*[,][\t ]*(\[(\w+|SP(\+|-)\d+)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*))?)?)?/;
 			var op1_group=3;	// group indexes for operands
 			var op2_group=6;
@@ -74,10 +73,12 @@ app.service('assembler', ['opcodes', function(opcodes) {
 					throw "offset must be a value between -16...+15";
 				
 				if (offset < 0) {
-					offset=32+offset;	// two's complement representation in 5-bit
+                    // two's complement representation in 5-bit
+					offset=32+offset;
 				}
-				
-				return offset*8+4;		// shift offset 3 bits right and add 4 as code for SP register
+
+                // shift offset 3 bits right and add 4 as code for SP register
+				return offset*8+4;
 			};
 			
             // Allowed: Register, Label or Number; SP+/-Number is allowed for 'regaddress' type
