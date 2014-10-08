@@ -47,9 +47,11 @@ String: "Hello World!"
 <pre>
 Register: A, B, C, D
 Address using a register: [A]
+Address using SP register and offset: [SP+2]
 Address using a constant: [100]
 Address using a label: label
-Constant: Any number between 0-255 (8bit unsigned)
+Constant: Any number between 0..255 (8bit unsigned)
+Offset for indirect addressing with SP: Integer between -16..+15 (sign is mandatory)
 </pre>
         <h4>MOV - Copy a value</h4>
         <p>Copies a value from <i>src</i> to <i>dest</i>. The MOV instruction is the only one able to directly modify the memory.</p>
@@ -249,6 +251,12 @@ PUSH constant
         <p>Pops a value from the stack to a register. This instruction will increase the SP.</p>
 <pre>
 POP reg
+</pre>
+        <h4>Other instructions</h4>
+        <b>HLT - Stops the processor.</b>
+        <p>Stops operation of the processor. Hit Reset button to reset IP before restarting.</p>
+<pre>
+HLT
 </pre>
         <hr style="margin-bottom:10px;"/>
         <p><small>by Marco Schweighauser (2013) | MIT License</small></p>
