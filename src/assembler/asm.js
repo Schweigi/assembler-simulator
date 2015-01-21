@@ -5,11 +5,12 @@ app.service('assembler', ['opcodes', function(opcodes) {
 
             // Use https://www.debuggex.com/
             // Matches: "label: INSTRUCTION (["')OPERAND1(]"'), (["')OPERAND2(]"')
-            // GROUPS:      1       2            3                 6
+            // GROUPS:      1       2            3                 7
             // var regex = /^[\t ]*(?:([.A-Za-z]\w*)[:])?(?:[\t ]*([A-Za-z]{2,4})(?:[\t ]+(\[\w+\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*)(?:[\t ]*[,][\t ]*(\[\w+\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*))?)?)?/;
-			var regex = /^[\t ]*(?:([.A-Za-z]\w*)[:])?(?:[\t ]*([A-Za-z]{2,4})(?:[\t ]+(\[(\w+|SP(\+|-)\d+)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*)(?:[\t ]*[,][\t ]*(\[(\w+|SP(\+|-)\d+)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*))?)?)?/;
+			// var regex = /^[\t ]*(?:([.A-Za-z]\w*)[:])?(?:[\t ]*([A-Za-z]{2,4})(?:[\t ]+(\[(\w+|SP(\+|-)\d+)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*)(?:[\t ]*[,][\t ]*(\[(\w+|SP(\+|-)\d+)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*))?)?)?/;
+			var regex = /^[\t ]*(?:([.A-Za-z]\w*)[:])?(?:[\t ]*([A-Za-z]{2,4})(?:[\t ]+(\[(\w+((\+|-)\d+)?)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*)(?:[\t ]*[,][\t ]*(\[(\w+((\+|-)\d+)?)\]|\".+?\"|\'.+?\'|[.A-Za-z0-9]\w*))?)?)?/;
 			var op1_group=3;	// group indexes for operands
-			var op2_group=6;
+			var op2_group=7;
             // MATCHES: "(+|-)INTEGER"
             var regexNum = /^[-+]?[0-9]+$/;
             // MATCHES: "(.L)abel"
@@ -40,7 +41,7 @@ app.service('assembler', ['opcodes', function(opcodes) {
                     throw "Invalid number format";
                 }
             };
-            // Allowed registers: A, B, C, D
+            // Allowed registers: A, B, C, D, SP
             var parseRegister = function(input) {
                 input = input.toUpperCase();
 
@@ -52,23 +53,45 @@ app.service('assembler', ['opcodes', function(opcodes) {
                     return 2;
                 } else if (input === 'D') {
                     return 3;
-                } else {
+                } else if (input === 'SP') {
+					return 4;
+				} else {
                     return undefined;
                 }
             };
 			
-			var parseSPAddressing=function(input) {
+			var parseOffsetAddressing=function(input) {
 				input = input.toUpperCase();
-				var m=0;
+				var m = 0;
+				var base = 0;
 				
-				if(input.slice(0,3) === "SP+") {
-					m=1;
-				} else if(input.slice(0,3) === "SP-") {
-					m=-1;
+				if (input[0] === 'A') {
+					base = 0;
+				} else if (input[0] === 'B') {
+					base = 1;
+				} else if (input[0] === 'C') {
+					base = 2;
+				} else if (input[0] === 'D') {
+					base = 3;
+				} else if( input.slice(0,2) === "SP") {
+					base = 4;
 				} else {
 					return undefined;
 				}
-				var offset = m*parseInt(input.slice(3),10);
+				var offset_start = 1;
+				if (base === 4) {
+					offset_start = 2;
+				}
+				
+				if (input[offset_start] === '-') {
+					m = -1;
+				} else if (input[offset_start] === '+') {
+					m = 1;
+				} else {
+					return undefined;
+				}
+				
+				var offset = m*parseInt(input.slice(offset_start+1),10);
 				
 				if (offset < -16 || offset > 15)
 					throw "offset must be a value between -16...+15";
@@ -77,7 +100,7 @@ app.service('assembler', ['opcodes', function(opcodes) {
 					offset=32+offset;	// two's complement representation in 5-bit
 				}
 				
-				return offset*8+4;		// shift offset 3 bits right and add 4 as code for SP register
+				return offset*8+base;		// shift offset 3 bits right and add 4 as code for SP register
 			};
 			
             // Allowed: Register, Label or Number; SP+/-Number is allowed for 'regaddress' type
@@ -93,7 +116,7 @@ app.service('assembler', ['opcodes', function(opcodes) {
                     } else {
 						if (typeReg === "regaddress") {
 						
-							register = parseSPAddressing(input);
+							register = parseOffsetAddressing(input);
 						
 							if (register !== undefined) {
 								return { type: typeReg, value: register};
@@ -597,7 +620,7 @@ app.service('assembler', ['opcodes', function(opcodes) {
                 }
             }
 
-            return { code: code, mapping: mapping };
+            return { code: code, mapping: mapping, labels: labels };
         }
     };
 }]);
