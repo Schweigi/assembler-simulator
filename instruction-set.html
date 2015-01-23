@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Simple 8-bit Assembler - Instruction Set Help</title>
-    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -43,18 +43,22 @@ Binary: 101b
 Character: 'A'
 String: "Hello World!"
 </pre>
-        <p>Operands can either be one of the four general purpose registers, a memory address or a constant. Instead of defining an address as a constant or by using a register you can use labels. The assembler will then replace the label with the corresponding constant.</p>
+        <p>Operands can either be one of the four general purpose registers, stack pointer register, a memory address or a constant.
+		Stack pointer register can only be used as operand in MOV, ADD, SUB, CMP, INC and DEC instructions.
+		Instead of defining an address as a constant or by using a register you can use labels. The assembler will then replace the label with the corresponding constant.</p>
 <pre>
-Register: A, B, C, D
-Address using a register: [A]
+General purpose (GP) register: A, B, C, D
+Stack pointer register: SP
+Address using a GP register: [A]
+Address using a GP register and offset: [D-3]
 Address using SP register and offset: [SP+2]
 Address using a constant: [100]
 Address using a label: label
 Constant: Any number between 0..255 (8bit unsigned)
-Offset for indirect addressing with SP: Integer between -16..+15 (sign is mandatory)
+Offset for indirect addressing: Integer between -16..+15 (sign is mandatory)
 </pre>
         <h4>MOV - Copy a value</h4>
-        <p>Copies a value from <i>src</i> to <i>dest</i>. The MOV instruction is the only one able to directly modify the memory.</p>
+        <p>Copies a value from <i>src</i> to <i>dest</i>. The MOV instruction is the only one able to directly modify the memory. SP can be used as operand with MOV.</p>
 <pre>
 MOV reg, reg
 MOV reg, address
@@ -69,7 +73,7 @@ DB constant
 </pre>
         <h4>Math operations</h4>
         <b>Addition and Subtraction</b>
-        <p>Adds two numbers together or subtract one number form another. This operations will modify the carry and zero flag.</p>
+        <p>Adds two numbers together or subtract one number form another. This operations will modify the carry and zero flag. SP can be used as operand with ADD and SUB.</p>
 <pre>
 ADD reg, reg
 ADD reg, address
@@ -79,7 +83,7 @@ SUB reg, address
 SUB reg, constant
 </pre>
         <b>Increment and Decrement</b>
-        <p>Increments or decrements a register by one. This operations will modify the carry and zero flag.</p>
+        <p>Increments or decrements a register by one. This operations will modify the carry and zero flag. SP can be used as operand with INC and DEC.</p>
 <pre>
 INC reg
 DEC reg
@@ -119,7 +123,7 @@ SHR reg, address
 SHR reg, constant
 </pre>
         <h4>CMP - Compare</h4>
-        <p>Compares two values and sets the zero flag to true if they are equal. Use this instruction before a conditional jump.</p>
+        <p>Compares two values and sets the zero flag to true if they are equal. SP can be used as operand with CMP. Use this instruction before a conditional jump.</p>
 <pre>
 CMP reg, reg
 CMP reg, address
@@ -259,7 +263,7 @@ POP reg
 HLT
 </pre>
         <hr style="margin-bottom:10px;"/>
-        <p><small>by Marco Schweighauser (2014) | MIT License</small></p>
+        <p><small>by Marco Schweighauser (2015) | MIT License</small></p>
     </div>
 </body>
 </html>
