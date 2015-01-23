@@ -36,3 +36,26 @@
     color:#FFFFFF;
     border-radius:2px;
 }
+.marker-a {
+	width:1.8em;
+	background-color:#4d8c20; /*6EC72E;   /* 83ED37; */
+	color:#FFFFFF;
+	border-radius:2px;
+}.marker-b {
+	width:1.8em;
+	background-color:#22d19d;	/* 37EDA1; */
+	color:#FFFFFF;
+	border-radius:2px;
+}
+.marker-c {
+	width:1.8em;
+	background-color:#A137ED;
+	color:#FFFFFF;
+	border-radius:2px;
+}
+.marker-d {
+	width:1.8em;
+	background-color:#e81f1f;  /*ED3783; */
+	color:#FFFFFF;
+	border-radius:2px;
+}
