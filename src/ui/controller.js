@@ -86,6 +86,7 @@ app.controller('Ctrl', ['$scope', '$timeout', 'cpu', 'memory', 'assembler', func
             var assembly = assembler.go($scope.code);
             $scope.mapping = assembly.mapping;
             var binary = assembly.code;
+			$scope.labels = assembly.labels;
 
             if (binary.length > memory.data.length)
                 throw "Binary code does not fit into the memory. Max " + memory.data.length + " bytes are allowed";
