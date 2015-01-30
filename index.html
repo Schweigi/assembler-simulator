@@ -36,7 +36,7 @@
                     <div class="panel-body">
                         <form role="form">
                             <textarea class="form-control source-code"
-                                      rows="14"
+                                      rows="30"
                                       style="margin-bottom:5px;"
                                       tab-support
                                       select-line
@@ -45,50 +45,43 @@
                         </form>
                     </div>
                 </div>
-				<div class="row">
-					<div class="col-md-4">
-						<div class="panel panel-default">
-							<div class="panel-heading">
-								<h4 class="panel-title">Output</h4>
-							</div>
-							<div class="panel-body source-code">
-								<div style="float:left;" class="output"
-									 ng-style="($index % 8 === 0 && {'clear': 'left'}) || {'float': 'left'}"
-									 ng-repeat="m in memory.data | startFrom: 232 track by $index">
-									<span>{{ getChar(m) }}</span>
-								</div>
-							</div>
-						</div>
-					</div>
-					<div class="col-md-8">
-						<div class="panel panel-default">
-							<div class="panel-heading">
-								<h4 class="panel-title">Labels</h4>
-							</div>
-							<div class="panel-body source-code">
-								<table class="table table-condensed table-striped">
-									<tr>
-										<th>Name</th>
-										<th>Address</th>
-										<th>Value</th>
-									</tr>
-									<tr ng-repeat="(name, value) in labels">
-										<td>{{ name }}</td>
-										<td>{{ value | number:displayHex }}</td>
-										<td>{{ memory.data[value] | number:displayHex }} 
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Labels</h4>
+                    </div>
+                    <div class="panel-body source-code">
+                        <table class="table table-condensed table-striped">
+                            <tr>
+                                <th>Name</th>
+                                <th>Address</th>
+                                <th>Value</th>
+                            </tr>
+                            <tr ng-repeat="(name, value) in labels">
+                                <td>{{ name }}</td>
+                                <td>{{ value | number:displayHex }}</td>
+                                <td>{{ memory.data[value] | number:displayHex }}
 											<span ng-if="memory.data[value] >= 32 && memory.data[value] <= 126">
 												('{{ getChar(memory.data[value]) }}')
 											</span>
-										</td>
-									</tr>
-								</table>
-							</div>
-						</div>
-					</div>
-				</div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
             </div>
             <div class="clearfix visible-xs visible-sm"></div>
             <div class="col-lg-5 col-md-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Output</h4>
+                    </div>
+                    <div class="panel-body source-code">
+                        <div style="float:left;" class="output"
+                             ng-repeat="m in memory.data | startFrom: 232 track by $index">
+                            <span>{{ getChar(m) }}</span>
+                        </div>
+                    </div>
+                </div>
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h4 class="panel-title">CPU & Memory</h4>
