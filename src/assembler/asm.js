@@ -21,6 +21,8 @@ app.service('assembler', ['opcodes', function(opcodes) {
             var mapping = {};
             // Hash map of label used to replace the labels after the assembler generated the code
             var labels = {};
+            // Hash of uppercase labels used to detect duplicates
+            var normalizedLabels = {};
 
             var lines = input.split('\n'); // Split text into code lines
 
@@ -136,11 +138,7 @@ app.service('assembler', ['opcodes', function(opcodes) {
             };
             // Allowed: Label
             var parseLabel = function(input) {
-                if (regexLabel.exec(input)) {
-                    return input.toUpperCase();
-                } else {
-                    return undefined;
-                }
+                return regexLabel.exec(input) ? input : undefined;
             };
             var getValue = function(input) {
                 switch(input.slice(0,1)) {
@@ -167,12 +165,12 @@ app.service('assembler', ['opcodes', function(opcodes) {
                 }
             };
             var addLabel = function(label) {
-                label = label.toUpperCase();
-                if (label in labels)
+                var upperLabel = label.toUpperCase();
+                if (upperLabel in normalizedLabels)
                     throw "Duplicate label: " + label;
 
-                if (label === "A" || label === "B" || label === "C" || label === "D")
-                    throw "Label contains keyword: " + label;
+                if (upperLabel === "A" || upperLabel === "B" || upperLabel === "C" || upperLabel === "D")
+                    throw "Label contains keyword: " + upperLabel;
 
                 labels[label] = code.length;
             };
