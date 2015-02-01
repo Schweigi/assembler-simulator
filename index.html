@@ -37,36 +37,13 @@
                         <form role="form">
                             <textarea id="sourceCode"
                                       class="form-control source-code"
-                                      rows="30"
                                       style="margin-bottom:5px;"
+                                      rows="35"
                                       tab-support
                                       select-line
                                       ng-model="code"></textarea>
                             <button type="button" class="btn btn-default" ng-click="assemble()">Assemble</button>
                         </form>
-                    </div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h4 class="panel-title">Labels</h4>
-                    </div>
-                    <div class="panel-body source-code">
-                        <table class="table table-condensed table-striped">
-                            <tr>
-                                <th>Name</th>
-                                <th>Address</th>
-                                <th>Value</th>
-                            </tr>
-                            <tr ng-repeat="(name, value) in labels">
-                                <td>{{ name }}</td>
-                                <td><a ng-click="jumpToLine(value)">{{ value | number:displayHex }}</a></td>
-                                <td>{{ memory.data[value] | number:displayHex }}
-                                    <span ng-if="memory.data[value] >= 32 && memory.data[value] <= 126">
-                                        ('{{ getChar(memory.data[value]) }}')
-                                    </span>
-                                </td>
-                            </tr>
-                        </table>
                     </div>
                 </div>
             </div>
@@ -156,6 +133,29 @@
                                 <a ng-click="displayD = false" ng-show="displayD">Hide</a>
                             </small>
                         </p>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h4 class="panel-title">Labels</h4>
+                    </div>
+                    <div class="panel-body source-code">
+                        <table class="table table-condensed table-striped">
+                            <tr>
+                                <th>Name</th>
+                                <th>Address</th>
+                                <th>Value</th>
+                            </tr>
+                            <tr ng-repeat="(name, value) in labels">
+                                <td>{{ name }}</td>
+                                <td><a ng-click="jumpToLine(value)">{{ value | number:displayHex }}</a></td>
+                                <td>{{ memory.data[value] | number:displayHex }}
+                                    <span ng-if="memory.data[value] >= 32 && memory.data[value] <= 126">
+                                        ('{{ getChar(memory.data[value]) }}')
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                 </div>
             </div>
