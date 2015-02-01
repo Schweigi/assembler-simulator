@@ -1318,7 +1318,7 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
     };
 
     return opcodes;
-}]);;app.controller('Ctrl', ['$scope', '$timeout', 'cpu', 'memory', 'assembler', function($scope, $timeout, cpu, memory, assembler) {
+}]);;app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'assembler', function($document, $scope, $timeout, cpu, memory, assembler) {
     $scope.memory = memory;
     $scope.cpu = cpu;
     $scope.error = '';
@@ -1429,10 +1429,22 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
         }
     };
 
+    $scope.jumpToLine = function(index) {
+        $document[0].getElementById('sourceCode').scrollIntoView();
+        $scope.selectedLine = $scope.mapping[index];
+    };
+
+
+    $scope.isInstruction = function(index) {
+        return $scope.mapping !== undefined &&
+               $scope.mapping[index] !== undefined &&
+               $scope.displayInstr;
+    };
+
     $scope.getMemoryCellCss = function(index) {
         if (index >= $scope.outputStartIndex) {
             return 'output-bg';
-        } else if ($scope.mapping[index] !== undefined && $scope.displayInstr) {
+        } else if ($scope.isInstruction(index)) {
             return 'instr-bg';
         } else if (index > cpu.sp && index <= cpu.maxSP) {
             return 'stack-bg';
@@ -1443,17 +1455,17 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
 
     $scope.getMemoryInnerCellCss = function(index) {
         if (index === cpu.ip) {
-            return 'marker-ip';
+            return 'marker marker-ip';
         } else if (index === cpu.sp) {
-            return 'marker-sp';
+            return 'marker marker-sp';
         } else if (index === cpu.gpr[0] && $scope.displayA) {
-            return 'marker-a';
+            return 'marker marker-a';
         } else if (index === cpu.gpr[1] && $scope.displayB) {
-            return 'marker-b';
+            return 'marker marker-b';
         } else if (index === cpu.gpr[2] && $scope.displayC) {
-            return 'marker-c';
+            return 'marker marker-c';
         } else if (index === cpu.gpr[3] && $scope.displayD) {
-            return 'marker-d';
+            return 'marker marker-d';
         } else {
             return '';
         }

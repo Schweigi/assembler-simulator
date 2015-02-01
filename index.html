@@ -31,11 +31,12 @@
             <div class="col-lg-7 col-md-6">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h4 class="panel-title">Code <small>(<a href="./instruction-set.html" target="_blank">Instruction Set</a>)</small></h4>
+                        <h4 class="panel-title">Code <small>(<a href="./instruction-set.html" target="_blank" style="color: #337AB7">Instruction Set</a>)</small></h4>
                     </div>
                     <div class="panel-body">
                         <form role="form">
-                            <textarea class="form-control source-code"
+                            <textarea id="sourceCode"
+                                      class="form-control source-code"
                                       rows="30"
                                       style="margin-bottom:5px;"
                                       tab-support
@@ -58,11 +59,11 @@
                             </tr>
                             <tr ng-repeat="(name, value) in labels">
                                 <td>{{ name }}</td>
-                                <td>{{ value | number:displayHex }}</td>
+                                <td><a ng-click="jumpToLine(value)">{{ value | number:displayHex }}</a></td>
                                 <td>{{ memory.data[value] | number:displayHex }}
-											<span ng-if="memory.data[value] >= 32 && memory.data[value] <= 126">
-												('{{ getChar(memory.data[value]) }}')
-											</span>
+                                    <span ng-if="memory.data[value] >= 32 && memory.data[value] <= 126">
+                                        ('{{ getChar(memory.data[value]) }}')
+                                    </span>
                                 </td>
                             </tr>
                         </table>
@@ -104,12 +105,12 @@
                             </thead>
                             <tbody>
                                 <tr style="text-align:center;" class="source-code">
-                                    <td><div style="margin:auto;" ng-class="displayA && 'marker-a'"><small>{{ cpu.gpr[0] | number:displayHex }}</small></div></td>
-                                    <td><div style="margin:auto;" ng-class="displayB && 'marker-b'"><small>{{ cpu.gpr[1] | number:displayHex }}</small></div></td>
-                                    <td><div style="margin:auto;" ng-class="displayC && 'marker-c'"><small>{{ cpu.gpr[2] | number:displayHex }}</small></div></td>
-                                    <td><div style="margin:auto;" ng-class="displayD && 'marker-d'"><small>{{ cpu.gpr[3] | number:displayHex }}</small></div></td>
-                                    <td><div style="margin:auto;" class="marker-ip"><small>{{ cpu.ip | number:displayHex }}</small></div></td>
-                                    <td><div style="margin:auto;" class="marker-sp"><small>{{ cpu.sp | number:displayHex }}</small></div></td>
+                                    <td><div style="margin:auto;" ng-class="displayA && 'marker marker-a'"><small>{{ cpu.gpr[0] | number:displayHex }}</small></div></td>
+                                    <td><div style="margin:auto;" ng-class="displayB && 'marker marker-b'"><small>{{ cpu.gpr[1] | number:displayHex }}</small></div></td>
+                                    <td><div style="margin:auto;" ng-class="displayC && 'marker marker-c'"><small>{{ cpu.gpr[2] | number:displayHex }}</small></div></td>
+                                    <td><div style="margin:auto;" ng-class="displayD && 'marker marker-d'"><small>{{ cpu.gpr[3] | number:displayHex }}</small></div></td>
+                                    <td><div style="margin:auto;" class="marker marker-ip"><small>{{ cpu.ip | number:displayHex }}</small></div></td>
+                                    <td><div style="margin:auto;" class="marker marker-sp"><small>{{ cpu.sp | number:displayHex }}</small></div></td>
                                     <td><small>{{ cpu.zero | flag }}</small></td>
                                     <td><small>{{ cpu.carry | flag }}</small></td>
                                     <td><small>{{ cpu.fault | flag }}</small></td>
@@ -121,8 +122,11 @@
                             <div class="memory-block"
                                  ng-repeat="m in memory.data track by $index"
                                  ng-class="getMemoryCellCss($index)">
-                                 <div ng-class="getMemoryInnerCellCss($index)">
-                                    <small>{{ m | number:displayHex }}</small>
+                                 <div ng-class="getMemoryInnerCellCss($index)" ng-switch="isInstruction($index)">
+                                     <small ng-switch-default>{{ m | number:displayHex }}</small>
+                                     <a ng-switch-when="true" ng-click="jumpToLine($index)">
+                                         <small>{{ m | number:displayHex }}</small>
+                                     </a>
                                  </div>
                             </div>
                         </div>

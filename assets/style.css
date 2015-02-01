@@ -3,63 +3,60 @@
 }
 
 .output, .output-bg {
-    background-color:#DFDFDF;
+    background-color: #DFDFDF;
 }
 
 .output {
     width: 1em;
-    margin-right:1px;
-    margin-bottom:1px;
-    text-align:center;
+    margin-right: 1px;
+    margin-bottom: 1px;
+    text-align: center;
 }
 
 .instr-bg {
-    background-color:#E6F3FF;
+    background-color: #E6F3FF;
+}
+
+.instr-bg a {
+    color: inherit;
 }
 
 .stack-bg {
-    background-color:#F8DCB4;
+    background-color: #F8DCB4;
 }
 
 .memory-block {
-    width:1.8em;
-    display:inline-block;
-    text-align:center;
+    width: 1.8em;
+    display: inline-block;
+    text-align: center;
+}
+
+.marker {
+    width: 1.8em;
+    color: #FFF;
+    border-radius: 2px;
 }
 
 .marker-ip {
-    width:1.8em;
-    background-color:#428BCA;
-    color:#FFFFFF;
-    border-radius:2px;
+    background-color: #428BCA;
 }
 
 .marker-sp {
-    width:1.8em;
-    background-color:#EEA236;
-    color:#FFFFFF;
-    border-radius:2px;
+    background-color: #EEA236;
 }
+
 .marker-a {
-	width:1.8em;
-	background-color:#4d8c20; /*6EC72E;   /* 83ED37; */
-	color:#FFFFFF;
-	border-radius:2px;
-}.marker-b {
-	width:1.8em;
-	background-color:#22d19d;	/* 37EDA1; */
-	color:#FFFFFF;
-	border-radius:2px;
+    background-color: #4D8C20;
 }
+
+.marker-b {
+	background-color: #22D19D;
+}
+
 .marker-c {
-	width:1.8em;
-	background-color:#A137ED;
-	color:#FFFFFF;
-	border-radius:2px;
+	background-color: #A137ED;
 }
+
 .marker-d {
-	width:1.8em;
-	background-color:#e81f1f;  /*ED3783; */
-	color:#FFFFFF;
-	border-radius:2px;
+	background-color: #E81F1F;
 }
