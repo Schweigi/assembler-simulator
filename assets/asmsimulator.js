@@ -21,6 +21,8 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
             var mapping = {};
             // Hash map of label used to replace the labels after the assembler generated the code
             var labels = {};
+            // Hash of uppercase labels used to detect duplicates
+            var normalizedLabels = {};
 
             var lines = input.split('\n'); // Split text into code lines
 
@@ -136,11 +138,7 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
             };
             // Allowed: Label
             var parseLabel = function(input) {
-                if (regexLabel.exec(input)) {
-                    return input.toUpperCase();
-                } else {
-                    return undefined;
-                }
+                return regexLabel.exec(input) ? input : undefined;
             };
             var getValue = function(input) {
                 switch(input.slice(0,1)) {
@@ -167,12 +165,12 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
                 }
             };
             var addLabel = function(label) {
-                label = label.toUpperCase();
-                if (label in labels)
+                var upperLabel = label.toUpperCase();
+                if (upperLabel in normalizedLabels)
                     throw "Duplicate label: " + label;
 
-                if (label === "A" || label === "B" || label === "C" || label === "D")
-                    throw "Label contains keyword: " + label;
+                if (upperLabel === "A" || upperLabel === "B" || upperLabel === "C" || upperLabel === "D")
+                    throw "Label contains keyword: " + upperLabel;
 
                 labels[label] = code.length;
             };
@@ -652,9 +650,9 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
 						self.gpr[reg] = value;
 					} else if(reg == self.gpr.length) {
 						self.sp=value;
-						if (self.sp < 0) {				// Not likely to happen, since we always get here after checkOpertion().
+						if (self.sp < self.minSP) {				// Not likely to happen, since we always get here after checkOpertion().
 							throw "Stack overflow";
-						} else if (self.sp > 231) {
+						} else if (self.sp > self.maxSP) {
 							throw "Stack underflow";
 						}
 					} else {
@@ -713,13 +711,13 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
                 };
                 var push = function(value) {
                     memory.store(self.sp--, value);
-                    if (self.sp < 0) {
+                    if (self.sp < self.minSP) {
                         throw "Stack overflow";
                     }
                 };
                 var pop = function() {
                     var value = memory.load(++self.sp);
-                    if (self.sp > 231) {
+                    if (self.sp > self.maxSP) {
                         throw "Stack underflow";
                     }
 
@@ -1191,9 +1189,11 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
         },
         reset: function() {
             var self = this;
+            self.maxSP = 231;
+            self.minSP = 0;
 
             self.gpr = [0, 0, 0, 0];
-            self.sp = 231;
+            self.sp = self.maxSP;
             self.ip = 0;
             self.zero = false;
             self.carry = false;
@@ -1318,15 +1318,20 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
     };
 
     return opcodes;
-}]);;app.controller('Ctrl', ['$scope', '$timeout', 'cpu', 'memory', 'assembler', function($scope, $timeout, cpu, memory, assembler) {
+}]);;app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'assembler', function($document, $scope, $timeout, cpu, memory, assembler) {
     $scope.memory = memory;
     $scope.cpu = cpu;
     $scope.error = '';
     $scope.isRunning = false;
     $scope.displayHex = true;
     $scope.displayInstr = true;
+    $scope.displayA = false;
+    $scope.displayB = false;
+    $scope.displayC = false;
+    $scope.displayD = false;
     $scope.speeds = [{speed:1, desc:"1 HZ"}, {speed:4, desc:"4 HZ"}, {speed:8, desc:"8 HZ"}, {speed:16, desc:"16 HZ"}];
     $scope.speed = 4;
+    $scope.outputStartIndex = 232;
 
     $scope.code = "; Simple example\n; Writes Hello World to the output\n\n	JMP start\nhello: DB \"Hello World!\" ; Variable\n       DB 0	; String terminator\n\nstart:\n	MOV C, hello    ; Point to var \n	MOV D, 232	; Point to output\n	CALL print\n        HLT             ; Stop execution\n\nprint:			; print(C:*from, D:*to)\n	PUSH A\n	PUSH B\n	MOV B, 0\n.loop:\n	MOV A, [C]	; Get char from var\n	MOV [D], A	; Write to output\n	INC C\n	INC D  \n	CMP B, [C]	; Check if end\n	JNZ .loop	; jump if not\n\n	POP B\n	POP A\n	RET";
 
@@ -1421,6 +1426,48 @@ var app = angular.module('ASMSimulator', []);;app.service('assembler', ['opcodes
             } else {
                 $scope.error = e.error;
             }
+        }
+    };
+
+    $scope.jumpToLine = function(index) {
+        $document[0].getElementById('sourceCode').scrollIntoView();
+        $scope.selectedLine = $scope.mapping[index];
+    };
+
+
+    $scope.isInstruction = function(index) {
+        return $scope.mapping !== undefined &&
+               $scope.mapping[index] !== undefined &&
+               $scope.displayInstr;
+    };
+
+    $scope.getMemoryCellCss = function(index) {
+        if (index >= $scope.outputStartIndex) {
+            return 'output-bg';
+        } else if ($scope.isInstruction(index)) {
+            return 'instr-bg';
+        } else if (index > cpu.sp && index <= cpu.maxSP) {
+            return 'stack-bg';
+        } else {
+            return '';
+        }
+    };
+
+    $scope.getMemoryInnerCellCss = function(index) {
+        if (index === cpu.ip) {
+            return 'marker marker-ip';
+        } else if (index === cpu.sp) {
+            return 'marker marker-sp';
+        } else if (index === cpu.gpr[0] && $scope.displayA) {
+            return 'marker marker-a';
+        } else if (index === cpu.gpr[1] && $scope.displayB) {
+            return 'marker marker-b';
+        } else if (index === cpu.gpr[2] && $scope.displayC) {
+            return 'marker marker-c';
+        } else if (index === cpu.gpr[3] && $scope.displayD) {
+            return 'marker marker-d';
+        } else {
+            return '';
         }
     };
 }]);;app.filter('flag', function() {
