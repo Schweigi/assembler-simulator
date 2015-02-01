@@ -77,7 +77,7 @@
                     </div>
                     <div class="panel-body source-code">
                         <div style="float:left;" class="output"
-                             ng-repeat="m in memory.data | startFrom: 232 track by $index">
+                             ng-repeat="m in memory.data | startFrom: outputStartIndex track by $index">
                             <span>{{ getChar(m) }}</span>
                         </div>
                     </div>
@@ -120,8 +120,8 @@
                         <div style="width:29em;" class="source-code">
                             <div class="memory-block"
                                  ng-repeat="m in memory.data track by $index"
-                                 ng-class="($index >= 232 && 'output-bg' || (mapping[$index] !== undefined && displayInstr && 'instr-bg' || ''))">
-                                 <div ng-class="(cpu.ip === $index && 'marker-ip' || (cpu.sp === $index && 'marker-sp' || ( cpu.gpr[0] === $index && displayA && 'marker-a' || ( cpu.gpr[1] === $index && displayB && 'marker-b' || ( cpu.gpr[2] === $index && displayC && 'marker-c' || ( cpu.gpr[3] === $index && displayD && 'marker-d' || ''))))))">
+                                 ng-class="getMemoryCellCss($index)">
+                                 <div ng-class="getMemoryInnerCellCss($index)">
                                     <small>{{ m | number:displayHex }}</small>
                                  </div>
                             </div>

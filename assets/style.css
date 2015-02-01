@@ -17,6 +17,10 @@
     background-color:#E6F3FF;
 }
 
+.stack-bg {
+    background-color:#F8DCB4;
+}
+
 .memory-block {
     width:1.8em;
     display:inline-block;
