@@ -28,9 +28,9 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
 						self.gpr[reg] = value;
 					} else if(reg == self.gpr.length) {
 						self.sp=value;
-						if (self.sp < 0) {				// Not likely to happen, since we always get here after checkOpertion().
+						if (self.sp < self.minSP) {				// Not likely to happen, since we always get here after checkOpertion().
 							throw "Stack overflow";
-						} else if (self.sp > 231) {
+						} else if (self.sp > self.maxSP) {
 							throw "Stack underflow";
 						}
 					} else {
@@ -89,13 +89,13 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
                 };
                 var push = function(value) {
                     memory.store(self.sp--, value);
-                    if (self.sp < 0) {
+                    if (self.sp < self.minSP) {
                         throw "Stack overflow";
                     }
                 };
                 var pop = function() {
                     var value = memory.load(++self.sp);
-                    if (self.sp > 231) {
+                    if (self.sp > self.maxSP) {
                         throw "Stack underflow";
                     }
 
@@ -567,9 +567,11 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
         },
         reset: function() {
             var self = this;
+            self.maxSP = 231;
+            self.minSP = 0;
 
             self.gpr = [0, 0, 0, 0];
-            self.sp = 231;
+            self.sp = self.maxSP;
             self.ip = 0;
             self.zero = false;
             self.carry = false;
