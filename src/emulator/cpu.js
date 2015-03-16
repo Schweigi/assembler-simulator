@@ -15,20 +15,24 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
                         return reg;
                     }
                 };
+
                 var checkGPR_SP = function(reg) {
-                    if (reg < 0 || reg >= 1+self.gpr.length) {
+                    if (reg < 0 || reg >= 1 + self.gpr.length) {
 						throw "Invalid register: " + reg;
                     } else {
                         return reg;
                     }
                 };
+
 				var setGPR_SP = function(reg,value)
 				{
-					if(reg >= 0 && reg <self.gpr.length) {
+					if(reg >= 0 && reg < self.gpr.length) {
 						self.gpr[reg] = value;
 					} else if(reg == self.gpr.length) {
-						self.sp=value;
-						if (self.sp < self.minSP) {				// Not likely to happen, since we always get here after checkOpertion().
+						self.sp = value;
+
+                        // Not likely to happen, since we always get here after checkOpertion().
+						if (self.sp < self.minSP) {
 							throw "Stack overflow";
 						} else if (self.sp > self.maxSP) {
 							throw "Stack underflow";
@@ -37,9 +41,10 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
 						throw "Invalid register: " + reg;
 					}
 				};
+
 				var getGPR_SP = function(reg)
 				{
-					if(reg >= 0 && reg <self.gpr.length) {
+					if(reg >= 0 && reg < self.gpr.length) {
 						return self.gpr[reg];
 					} else if(reg == self.gpr.length) {
 						return self.sp;
@@ -47,7 +52,8 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
 						throw "Invalid register: " + reg;
 					}
 				};
-				var indirectRegisterAddress=function(value) {
+
+				var indirectRegisterAddress = function(value) {
 					var reg = value % 8;
 					
 					var base;
@@ -58,12 +64,13 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
 					}
 					
 					var offset = Math.floor(value / 8);
-					if ( offset>15 ) {
+					if ( offset > 15 ) {
 						offset = offset - 32;
 					}
 					
 					return base+offset;
 				};
+
                 var checkOperation = function(value) {
                     self.zero = false;
                     self.carry = false;
@@ -80,6 +87,7 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
 
                     return value;
                 };
+
                 var jump = function(newIP) {
                     if (newIP < 0 || newIP >= memory.data.length) {
                         throw "IP outside memory";
@@ -87,12 +95,14 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
                         self.ip = newIP;
                     }
                 };
+
                 var push = function(value) {
                     memory.store(self.sp--, value);
                     if (self.sp < self.minSP) {
                         throw "Stack overflow";
                     }
                 };
+
                 var pop = function() {
                     var value = memory.load(++self.sp);
                     if (self.sp > self.maxSP) {
@@ -101,6 +111,7 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
 
                     return value;
                 };
+
                 var division = function(divisor) {
                     if (divisor === 0) {
                         throw "Division by 0";

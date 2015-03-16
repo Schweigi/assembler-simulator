@@ -1,8 +1,8 @@
-app.service('memory', [function() {
+app.service('memory', [function () {
     var memory = {
         data: Array(256),
         lastAccess: -1,
-        load: function(address) {
+        load: function (address) {
             var self = this;
 
             if (address < 0 || address >= self.data.length) {
@@ -12,7 +12,7 @@ app.service('memory', [function() {
             self.lastAccess = address;
             return self.data[address];
         },
-        store: function(address, value) {
+        store: function (address, value) {
             var self = this;
 
             if (address < 0 || address >= self.data.length) {
@@ -22,7 +22,7 @@ app.service('memory', [function() {
             self.lastAccess = address;
             self.data[address] = value;
         },
-        reset: function() {
+        reset: function () {
             var self = this;
 
             self.lastAccess = -1;

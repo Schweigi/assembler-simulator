@@ -1,25 +1,25 @@
 // Source: http://lostsource.com/2012/11/30/selecting-textarea-line.html
-app.directive('selectLine', [function() {
+app.directive('selectLine', [function () {
     return {
         restrict: 'A',
-        link: function(scope, element, attrs, controller) {
-            scope.$watch('selectedLine', function() {
+        link: function (scope, element, attrs, controller) {
+            scope.$watch('selectedLine', function () {
                 if (scope.selectedLine >= 0) {
                     var lines = element[0].value.split("\n");
 
                     // Calculate start/end
                     var startPos = 0;
-                    for(var x = 0; x < lines.length; x++) {
-                        if(x == scope.selectedLine) {
+                    for (var x = 0; x < lines.length; x++) {
+                        if (x == scope.selectedLine) {
                             break;
                         }
-                        startPos += (lines[x].length+1);
+                        startPos += (lines[x].length + 1);
                     }
 
-                    var endPos = lines[scope.selectedLine].length+startPos;
+                    var endPos = lines[scope.selectedLine].length + startPos;
 
                     // Chrome / Firefox
-                    if(typeof(element[0].selectionStart) != "undefined") {
+                    if (typeof(element[0].selectionStart) != "undefined") {
                         element[0].focus();
                         element[0].selectionStart = startPos;
                         element[0].selectionEnd = endPos;
