@@ -1,6 +1,6 @@
 {
   "name": "asmsimulator",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "Simple 8-bit Assembler Simulator in Javascript",
   "author": "Marco Schweighauser",
   "license": "MIT",
