@@ -13,6 +13,9 @@ A simulator which provides a simplified assembler syntax (based on NASM) and is 
 Make sure you have <a href="http://www.gruntjs.com/" target="_blank">Grunt</a> installed to compile the `asmsimulator.js` script.
 Run `grunt` to build the project.
 
+### Background
+A technical introduction is available on my blog: [www.mschweighauser.com](https://www.mschweighauser.com/make-your-own-assembler-simulator-in-javascript-part1/).
+
 ### License
 **The MIT License**
 

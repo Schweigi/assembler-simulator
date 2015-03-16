@@ -140,16 +140,16 @@
                         <h4 class="panel-title">Labels</h4>
                     </div>
                     <div class="panel-body source-code">
-                        <table class="table table-condensed table-striped">
+                        <table class="table table-condensed table-striped codelabels">
                             <tr>
                                 <th>Name</th>
                                 <th>Address</th>
                                 <th>Value</th>
                             </tr>
-                            <tr ng-repeat="(name, value) in labels">
-                                <td>{{ name }}</td>
-                                <td><a ng-click="jumpToLine(value)">{{ value | number:displayHex }}</a></td>
-                                <td>{{ memory.data[value] | number:displayHex }}
+                            <tr ng-repeat="(name, value) in labels" class="codelabel">
+                                <td class="codelabel-name">{{ name }}</td>
+                                <td class="codelabel-line"><a ng-click="jumpToLine(value)">{{ value | number:displayHex }}</a></td>
+                                <td class="codelabel-value">{{ memory.data[value] | number:displayHex }}
                                     <span ng-if="memory.data[value] >= 32 && memory.data[value] <= 126">
                                         ('{{ getChar(memory.data[value]) }}')
                                     </span>
@@ -161,7 +161,7 @@
             </div>
         </div>
         <hr style="margin-top:10px;margin-bottom:10px;"/>
-        <p><small>by Marco Schweighauser (2015) | MIT License</small></p>
+        <p><small>by Marco Schweighauser (2015) | MIT License | <a href="https://www.mschweighauser.com/make-your-own-assembler-simulator-in-javascript-part1/" target="_blank">Blog</a></small></p>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
     <script src="assets/asmsimulator.js"></script>

@@ -1,7 +1,7 @@
-app.directive('tabSupport', [function() {
+app.directive('tabSupport', [function () {
     return {
         restrict: 'A',
-        link: function(scope, element, attrs, controller) {
+        link: function (scope, element, attrs, controller) {
             element.bind("keydown", function (e) {
                 if (e.keyCode === 9) {
                     var val = this.value;
