@@ -18,58 +18,58 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
 
                 var checkGPR_SP = function(reg) {
                     if (reg < 0 || reg >= 1 + self.gpr.length) {
-						throw "Invalid register: " + reg;
+                        throw "Invalid register: " + reg;
                     } else {
                         return reg;
                     }
                 };
 
-				var setGPR_SP = function(reg,value)
-				{
-					if(reg >= 0 && reg < self.gpr.length) {
-						self.gpr[reg] = value;
-					} else if(reg == self.gpr.length) {
-						self.sp = value;
+                var setGPR_SP = function(reg,value)
+                {
+                    if(reg >= 0 && reg < self.gpr.length) {
+                        self.gpr[reg] = value;
+                    } else if(reg == self.gpr.length) {
+                        self.sp = value;
 
                         // Not likely to happen, since we always get here after checkOpertion().
-						if (self.sp < self.minSP) {
-							throw "Stack overflow";
-						} else if (self.sp > self.maxSP) {
-							throw "Stack underflow";
-						}
-					} else {
-						throw "Invalid register: " + reg;
-					}
-				};
+                        if (self.sp < self.minSP) {
+                            throw "Stack overflow";
+                        } else if (self.sp > self.maxSP) {
+                            throw "Stack underflow";
+                        }
+                    } else {
+                        throw "Invalid register: " + reg;
+                    }
+                };
 
-				var getGPR_SP = function(reg)
-				{
-					if(reg >= 0 && reg < self.gpr.length) {
-						return self.gpr[reg];
-					} else if(reg == self.gpr.length) {
-						return self.sp;
-					} else {
-						throw "Invalid register: " + reg;
-					}
-				};
+                var getGPR_SP = function(reg)
+                {
+                    if(reg >= 0 && reg < self.gpr.length) {
+                        return self.gpr[reg];
+                    } else if(reg == self.gpr.length) {
+                        return self.sp;
+                    } else {
+                        throw "Invalid register: " + reg;
+                    }
+                };
 
-				var indirectRegisterAddress = function(value) {
-					var reg = value % 8;
-					
-					var base;
-					if (reg < self.gpr.length) {
-						base = self.gpr[reg];
-					} else {
-						base = self.sp;
-					}
-					
-					var offset = Math.floor(value / 8);
-					if ( offset > 15 ) {
-						offset = offset - 32;
-					}
-					
-					return base+offset;
-				};
+                var indirectRegisterAddress = function(value) {
+                    var reg = value % 8;
+                    
+                    var base;
+                    if (reg < self.gpr.length) {
+                        base = self.gpr[reg];
+                    } else {
+                        base = self.sp;
+                    }
+                    
+                    var offset = Math.floor(value / 8);
+                    if ( offset > 15 ) {
+                        offset = offset - 32;
+                    }
+                    
+                    return base+offset;
+                };
 
                 var checkOperation = function(value) {
                     self.zero = false;
