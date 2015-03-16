@@ -19,6 +19,7 @@
 
 .instr-bg a {
     color: inherit;
+    cursor: pointer;
 }
 
 .stack-bg {
@@ -59,4 +60,8 @@
 
 .marker-d {
 	background-color: #E81F1F;
+}
+
+.codelabel-line a {
+    cursor: pointer;
 }
