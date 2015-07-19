@@ -719,7 +719,7 @@ var app = angular.module('ASMSimulator', []);
                         self.zero = true;
                     } else if (value < 0) {
                         self.carry = true;
-                        value = 255 - (-value) % 256;
+                        value = 256 - (-value) % 256;
                     }
 
                     return value;

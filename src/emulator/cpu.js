@@ -82,7 +82,7 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
                         self.zero = true;
                     } else if (value < 0) {
                         self.carry = true;
-                        value = 255 - (-value) % 256;
+                        value = 256 - (-value) % 256;
                     }
 
                     return value;
