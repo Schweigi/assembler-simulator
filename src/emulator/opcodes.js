@@ -73,7 +73,15 @@ app.service('opcodes', [function() {
         SHR_REG_WITH_REG: 94,
         SHR_REGADDRESS_WITH_REG: 95,
         SHR_ADDRESS_WITH_REG: 96,
-        SHR_NUMBER_WITH_REG: 97
+        SHR_NUMBER_WITH_REG: 97,
+        ADDC_REG_TO_REG: 98,
+        ADDC_REGADDRESS_TO_REG: 99,
+        ADDC_ADDRESS_TO_REG: 100,
+        ADDC_NUMBER_TO_REG: 101,
+        SUBC_REG_FROM_REG: 102,
+        SUBC_REGADDRESS_FROM_REG: 103,
+        SUBC_ADDRESS_FROM_REG: 104,
+        SUBC_NUMBER_FROM_REG: 105
     };
 
     return opcodes;

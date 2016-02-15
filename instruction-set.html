@@ -82,6 +82,16 @@ SUB reg, reg
 SUB reg, address
 SUB reg, constant
 </pre>
+        <b>Addition with carry and Subtraction with borrow</b>b>
+        <p>Adds two numbers or subtracts one number from another. If the carry flag is set, this will add or subtract one more. This is useful for adding and subtracting numbers which are wider than 8 bits. These operations will modify the carry and zero flag. SP can be used as operand with ADDC and SUBC.</p>
+<pre>
+ADDC reg, reg
+ADDC reg, address
+ADDC reg, constant
+SUBC reg, reg
+SUBC reg, address
+SUBC reg, constant
+</pre>
         <b>Increment and Decrement</b>
         <p>Increments or decrements a register by one. This operations will modify the carry and zero flag. SP can be used as operand with INC and DEC.</p>
 <pre>

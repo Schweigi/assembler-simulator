@@ -124,7 +124,7 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
                     throw "Instruction pointer is outside of memory";
                 }
                 
-                var regTo, regFrom, memFrom, memTo, number;
+                var regTo, regFrom, memFrom, memTo, number, carryVal;
                 var instr = memory.load(self.ip);
                 switch(instr) {
                     case opcodes.NONE:
@@ -201,6 +201,34 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
                         setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) + number));
                         self.ip++;
                         break;
+                    case opcodes.ADDC_REG_TO_REG:
+                        regTo = checkGPR_SP(memory.load(++self.ip));
+                        regFrom = checkGPR_SP(memory.load(++self.ip));
+                        carryVal = self.carry ? 1 : 0;
+                        setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) + getGPR_SP(regFrom) + carryVal ));
+                        self.ip++;
+                        break;
+                    case opcodes.ADDC_REGADDRESS_TO_REG:
+                        regTo = checkGPR_SP(memory.load(++self.ip));
+                        regFrom = memory.load(++self.ip);
+                        carryVal = self.carry ? 1 : 0;
+                        setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) + memory.load(indirectRegisterAddress(regFrom)) + carryVal));
+                        self.ip++;
+                        break;
+                    case opcodes.ADDC_ADDRESS_TO_REG:
+                        regTo = checkGPR_SP(memory.load(++self.ip));
+                        memFrom = memory.load(++self.ip);
+                        carryVal = self.carry ? 1 : 0;
+                        setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) + memory.load(memFrom) + carryVal));
+                        self.ip++;
+                        break;
+                    case opcodes.ADDC_NUMBER_TO_REG:
+                        regTo = checkGPR_SP(memory.load(++self.ip));
+                        number = memory.load(++self.ip);
+                        carryVal = self.carry ? 1 : 0;
+                        setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) + number + carryVal));
+                        self.ip++;
+                        break;
                     case opcodes.SUB_REG_FROM_REG:
                         regTo = checkGPR_SP(memory.load(++self.ip));
                         regFrom = checkGPR_SP(memory.load(++self.ip));
@@ -223,6 +251,34 @@ app.service('cpu', ['opcodes', 'memory', function(opcodes, memory) {
                         regTo = checkGPR_SP(memory.load(++self.ip));
                         number = memory.load(++self.ip);
                         setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) - number));
+                        self.ip++;
+                        break;
+                    case opcodes.SUBC_REG_FROM_REG:
+                        regTo = checkGPR_SP(memory.load(++self.ip));
+                        regFrom = checkGPR_SP(memory.load(++self.ip));
+                        carryVal = self.carry ? 1 : 0;
+                        setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) - self.gpr[regFrom] - carryVal));
+                        self.ip++;
+                        break;
+                    case opcodes.SUBC_REGADDRESS_FROM_REG:
+                        regTo = checkGPR_SP(memory.load(++self.ip));
+                        regFrom = memory.load(++self.ip);
+                        carryVal = self.carry ? 1 : 0;
+                        setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) - memory.load(indirectRegisterAddress(regFrom)) - carryVal));
+                        self.ip++;
+                        break;
+                    case opcodes.SUBC_ADDRESS_FROM_REG:
+                        regTo = checkGPR_SP(memory.load(++self.ip));
+                        memFrom = memory.load(++self.ip);
+                        carryVal = self.carry ? 1 : 0;
+                        setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) - memory.load(memFrom) - carryVal));
+                        self.ip++;
+                        break;
+                    case opcodes.SUBC_NUMBER_FROM_REG:
+                        regTo = checkGPR_SP(memory.load(++self.ip));
+                        number = memory.load(++self.ip);
+                        carryVal = self.carry ? 1 : 0;
+                        setGPR_SP(regTo,checkOperation(getGPR_SP(regTo) - number - carryVal));
                         self.ip++;
                         break;
                     case opcodes.INC_REG:
