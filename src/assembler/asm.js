@@ -264,6 +264,23 @@ app.service('assembler', ['opcodes', function (opcodes) {
 
                                     code.push(opCode, p1.value, p2.value);
                                     break;
+                                case 'ADDC':
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
+
+                                    if (p1.type === "register" && p2.type === "register")
+                                        opCode = opcodes.ADDC_REG_TO_REG;
+                                    else if (p1.type === "register" && p2.type === "regaddress")
+                                        opCode = opcodes.ADDC_REGADDRESS_TO_REG;
+                                    else if (p1.type === "register" && p2.type === "address")
+                                        opCode = opcodes.ADDC_ADDRESS_TO_REG;
+                                    else if (p1.type === "register" && p2.type === "number")
+                                        opCode = opcodes.ADDC_NUMBER_TO_REG;
+                                    else
+                                        throw "ADDC does not support this operands";
+
+                                    code.push(opCode, p1.value, p2.value);
+                                    break;
                                 case 'SUB':
                                     p1 = getValue(match[op1_group]);
                                     p2 = getValue(match[op2_group]);
@@ -278,6 +295,23 @@ app.service('assembler', ['opcodes', function (opcodes) {
                                         opCode = opcodes.SUB_NUMBER_FROM_REG;
                                     else
                                         throw "SUB does not support this operands";
+
+                                    code.push(opCode, p1.value, p2.value);
+                                    break;
+                                case 'SUBC':
+                                    p1 = getValue(match[op1_group]);
+                                    p2 = getValue(match[op2_group]);
+
+                                    if (p1.type === "register" && p2.type === "register")
+                                        opCode = opcodes.SUBC_REG_FROM_REG;
+                                    else if (p1.type === "register" && p2.type === "regaddress")
+                                        opCode = opcodes.SUBC_REGADDRESS_FROM_REG;
+                                    else if (p1.type === "register" && p2.type === "address")
+                                        opCode = opcodes.SUBC_ADDRESS_FROM_REG;
+                                    else if (p1.type === "register" && p2.type === "number")
+                                        opCode = opcodes.SUBC_NUMBER_FROM_REG;
+                                    else
+                                        throw "SUBC does not support this operands";
 
                                     code.push(opCode, p1.value, p2.value);
                                     break;
