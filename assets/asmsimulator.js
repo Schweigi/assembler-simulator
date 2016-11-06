@@ -1505,7 +1505,15 @@ var app = angular.module('ASMSimulator', []);
 }]);
 ;app.filter('flag', function() {
     return function(input) {
-        return input.toString().toUpperCase();
+        // convert flag to uppercase
+        var str = input.toString().toUpperCase();
+        
+        // pad with unicode nbsp to stop the flag value from change length
+        var l = str.length;
+        if(l < 5){
+          for(i=0;i<5-l;i++) str += '\u00A0';
+        }
+        return str;
     };
 });
 ;app.filter('number', function() {
