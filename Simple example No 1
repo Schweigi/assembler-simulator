@@ -3,7 +3,7 @@
 
 JMP start
 
-data: 	DB "ovo je u redu"
+data: 	DB "ovo je u redu" // this is fine (Croatian)
 data1:	DB 11
 x:	DB 0xA4
 y:	DB 101b
