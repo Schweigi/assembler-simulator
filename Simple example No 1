@@ -1,0 +1,31 @@
+; Simple example No 1
+; Input data in various format, loading registers, addition and subtracting
+
+JMP start
+
+data: 	DB "ovo je u redu"
+data1:	DB 11
+x:	DB 0xA4
+y:	DB 101b
+display: DB 0x88
+
+start: 	MOV A, data1
+	MOV B, 10
+	MOV C, 0xAA
+	
+add:	ADD A, B
+	PUSH A
+	
+sub:	SUB A,B
+	PUSH A
+
+	POP C
+	MOV A, display
+	MOV [0xE8], 0x1F
+
+	POP D
+	; MOV display, D
+	; MOV display, A
+
+HLT
+
