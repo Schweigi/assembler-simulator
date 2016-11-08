@@ -112,8 +112,9 @@
                                 <span>Clock speed:</span>
                                 <select ng-model="speed" ng-options="item.speed as item.desc for item in speeds"></select>
                                 <span style="margin-left:5px;">Instructions:</span>
-                                <a ng-click="displayInstr = true" ng-hide="displayInstr">Show</a>
-                                <a ng-click="displayInstr = false" ng-show="displayInstr">Hide</a>
+                                <span ng-hide="labels != null">Show</span>
+                                <a ng-click="displayInstr = true"  ng-hide="displayInstr || labels == null">Show</a>
+                                <a ng-click="displayInstr = false" ng-show="displayInstr" ng-hide="labels == null">Hide</a>
                                 <span style="margin-left:5px;">View:</span>
                                 <a ng-click="displayHex = true" ng-hide="displayHex">Hex</a>
                                 <a ng-click="displayHex = false" ng-show="displayHex">Decimal</a>
