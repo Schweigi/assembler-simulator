@@ -1447,7 +1447,7 @@ var app = angular.module('ASMSimulator', []);
     return opcodes;
 }]);
 ;app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'assembler', function ($document, $scope, $timeout, cpu, memory, assembler) {
-
+    $scope.displayInstr = false;
     $scope.memory = memory;
     $scope.cpu = cpu;
     $scope.error = '';
@@ -1466,10 +1466,12 @@ var app = angular.module('ASMSimulator', []);
     $scope.code = "; Simple example\n; Writes Hello World to the output\n\n	JMP start\nhello: DB \"Hello World!\" ; Variable\n       DB 0	; String terminator\n\nstart:\n	MOV C, hello    ; Point to var \n	MOV D, 232	; Point to output\n	CALL print\n        HLT             ; Stop execution\n\nprint:			; print(C:*from, D:*to)\n	PUSH A\n	PUSH B\n	MOV B, 0\n.loop:\n	MOV A, [C]	; Get char from var\n	MOV [D], A	; Write to output\n	INC C\n	INC D  \n	CMP B, [C]	; Check if end\n	JNZ .loop	; jump if not\n\n	POP B\n	POP A\n	RET";
 
     $scope.reset = function () {
+		$timeout.cancel(runner);
 		$scope.isRunning = false;
 		$scope.labels = null;
 		
-		//$scope.displayInstr = false;
+		$scope.displayInstr = false;
+		delete $scope.mapping;
 
         cpu.reset();
         memory.reset();
@@ -1589,7 +1591,7 @@ var app = angular.module('ASMSimulator', []);
         }
     };
 
-    $scope.getMemoryInnerCellCss = function (index) {
+    $scope.getMemoryInnerCellCss = function (index) { 
         if (index === cpu.ip) {
             return 'marker marker-ip';
         } else if (index === cpu.sp) {
