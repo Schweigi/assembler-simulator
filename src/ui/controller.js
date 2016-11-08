@@ -23,6 +23,9 @@ app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'ass
         memory.reset();
         $scope.error = '';
         $scope.selectedLine = -1;
+        
+        // force Instructions Hide
+        displayInstr = false;
     };
 
     $scope.executeStep = function () {
@@ -102,6 +105,8 @@ app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'ass
             for (var i = 0, l = binary.length; i < l; i++) {
                 memory.data[i] = binary[i];
             }
+            
+            displayInstr = true;
         } catch (e) {
             if (e.line !== undefined) {
                 $scope.error = e.line + " | " + e.error;
