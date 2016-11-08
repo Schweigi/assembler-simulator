@@ -1,21 +1,10 @@
 app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'assembler', function ($document, $scope, $timeout, cpu, memory, assembler) {
-    $scope.memory = memory;
-    $scope.cpu = cpu;
-    $scope.error = '';
-    $scope.isRunning = false;
-    $scope.displayHex = true;
-    $scope.displayInstr = true;
-    $scope.displayA = false;
-    $scope.displayB = false;
-    $scope.displayC = false;
-    $scope.displayD = false;
-    $scope.speeds = [{speed: 1, desc: "1 HZ"},
-                     {speed: 4, desc: "4 HZ"},
-                     {speed: 8, desc: "8 HZ"},
-                     {speed: 16, desc: "16 HZ"}];
-    $scope.speed = 4;
-    $scope.outputStartIndex = 232;
 
+
+	// output ram location
+	$scope.outputStartIndex = 232;
+
+	// code
     $scope.code = "; Simple example\n; Writes Hello World to the output\n\n	JMP start\nhello: DB \"Hello World!\" ; Variable\n       DB 0	; String terminator\n\nstart:\n	MOV C, hello    ; Point to var \n	MOV D, 232	; Point to output\n	CALL print\n        HLT             ; Stop execution\n\nprint:			; print(C:*from, D:*to)\n	PUSH A\n	PUSH B\n	MOV B, 0\n.loop:\n	MOV A, [C]	; Get char from var\n	MOV [D], A	; Write to output\n	INC C\n	INC D  \n	CMP B, [C]	; Check if end\n	JNZ .loop	; jump if not\n\n	POP B\n	POP A\n	RET";
 
     $scope.reset = function () {
@@ -24,8 +13,24 @@ app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'ass
         $scope.error = '';
         $scope.selectedLine = -1;
         
-        // force Instructions Hide
-        displayInstr = false;
+        displayInstr = true;
+
+		$scope.memory = memory;
+		$scope.cpu = cpu;
+		$scope.error = '';
+		$scope.isRunning = false;
+		$scope.displayHex = true;
+		$scope.displayA = false;
+		$scope.displayB = false;
+		$scope.displayC = false;
+		$scope.displayD = false;
+		$scope.speeds = [{speed: 1, desc: "1 HZ"},
+                     {speed: 4, desc: "4 HZ"},
+                     {speed: 8, desc: "8 HZ"},
+                     {speed: 16, desc: "16 HZ"}];
+		$scope.speed = 4;
+
+
     };
 
     $scope.executeStep = function () {
@@ -84,6 +89,7 @@ app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'ass
         var text = String.fromCharCode(value);
 
         if (text.trim() === '') {
+			// &nbsp;&nbsp;
             return '\u00A0\u00A0';
         } else {
             return text;
