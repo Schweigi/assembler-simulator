@@ -23,7 +23,6 @@
         <p>This simulator provides a simplified assembler syntax (based on <a href="http://www.nasm.us" target="_blank">NASM</a>) and is simulating a x86 like cpu. In depth documentation and introduction to assembler can be found on the following websites:</p>
         <ul>
             <li><a href="http://en.wikipedia.org/wiki/Assembly_language" target="_blank">Assembly - Wikipedia</a></li>
-            <li><a href="http://cs.smith.edu/~thiebaut/ArtOfAssembly/artofasm.html" target="_blank">The Art of Assembly Language Programming</a></li>
             <li><a href="http://www.nasm.us/xdoc/2.10.09/html/nasmdoc3.html" target="_blank">NASM Language Documentation</a></li>
         </ul>
         <p>The simulator consists of a 8-bit cpu and 256 bytes of memory. All instructions (code) and variables (data) needs to fit inside the memory. For simplicity every instruction (and operand) is 1 byte. Therefore a MOV instruction will use 3 bytes of memory. The simulator provides a console output which is memory mapped from 0xE8 to 0xFF. Memory mapped means that every value written to this memory block is visible on the console.</p>
