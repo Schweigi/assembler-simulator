@@ -204,6 +204,9 @@ var app = angular.module('ASMSimulator', []);
                             }
 
                             switch (instr) {
+                                case 'NOP':
+                                    code.push(opcodes.NOP);
+                                    break;
                                 case 'DB':
                                     p1 = getValue(match[op1_group]);
 
