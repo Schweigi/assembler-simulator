@@ -692,19 +692,19 @@ var app = angular.module('ASMSimulator', []);
 
                 var indirectRegisterAddress = function(value) {
                     var reg = value % 8;
-                    
+
                     var base;
                     if (reg < self.gpr.length) {
                         base = self.gpr[reg];
                     } else {
                         base = self.sp;
                     }
-                    
+
                     var offset = Math.floor(value / 8);
                     if ( offset > 15 ) {
                         offset = offset - 32;
                     }
-                    
+
                     return base+offset;
                 };
 
@@ -760,7 +760,7 @@ var app = angular.module('ASMSimulator', []);
                 if (self.ip < 0 || self.ip >= memory.data.length) {
                     throw "Instruction pointer is outside of memory";
                 }
-                
+
                 var regTo, regFrom, memFrom, memTo, number;
                 var instr = memory.load(self.ip);
                 switch(instr) {
@@ -1440,6 +1440,7 @@ var app = angular.module('ASMSimulator', []);
         try {
             $scope.reset();
 
+            $scope.code=angular.element($('#sourceCode')).val();
             var assembly = assembler.go($scope.code);
             $scope.mapping = assembly.mapping;
             var binary = assembly.code;

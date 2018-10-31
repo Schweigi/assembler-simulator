@@ -1,15 +1,57 @@
 <!DOCTYPE html>
 <html ng-app="ASMSimulator">
 <head>
+
     <title>Simple 8-bit Assembler Simulator in Javascript</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="fontHack.js">  </script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="assets/style.css">
-    <script type="text/javascript" src="//use.typekit.net/tor0zlh.js"></script>
-    <script type="text/javascript">try{Typekit.load();}catch(e){}</script>
+    <link rel="shortcut icon" href="./favico.ico" />
+
+    <!-- <script src="https://use.typekit.net/hpv3aoy.js"></script> -->
+
+<script>try{Typekit.load({ async: true });}catch(e){}</script>
+    <!-- <script type="text/javascript" src="//use.typekit.net/tor0zlh.js"></script>
+    <script type="text/javascript">try{Typekit.load();}catch(e){}</script> -->
+    <script type="text/javascript">
+    function download(  type) {
+      var text = document.getElementById('sourceCode').value;
+      var name = prompt('enter the file name');
+      if(name != null && name !=''){
+      name = name + ".asm";
+    }else{
+      alert("please enter the file name to save file");
+      return;
+    }
+  var a = document.getElementById("a");
+  var file = new Blob([text], {type: type});
+  a.href = URL.createObjectURL(file);
+  a.download = name;
+  document.getElementById('a').click();
+}
+      function readSingleFile(evt) {
+        //Retrieve the first (and only!) File from the FileList object
+        var f = evt.target.files[0];
+        if (f) {
+          var r = new FileReader();
+          r.onload = function(e) {
+              var contents = e.target.result;
+
+            document.getElementById('sourceCode').value=  contents;
+          }
+          r.readAsText(f);
+        } else {
+          alert("Failed to load file");
+        }
+      }
+
+    </script>
+
+
 </head>
 <body ng-controller="Ctrl">
-    <a href="https://github.com/Schweigi/assembler-simulator"><img style="z-index:1001;position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+    <a href="https://github.com/veera83372/assembler-simulator"><img style="z-index:1001;position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
     <nav class="navbar navbar-inverse" role="navigation" style="background-color:#428BCA;border:0px;border-radius:0px;">
         <div class="container">
             <div class="navbar-header">
@@ -20,6 +62,7 @@
                 </div>
                 <button type="button" class="btn btn-default navbar-btn" ng-click="reset()">Reset</button>
             </div>
+
             <div class="navbar-header navbar-right">
                 <a class="navbar-brand" style="color:#FFFFFF">Simple 8-bit Assembler Simulator</a>
             </div>
@@ -33,17 +76,34 @@
                     <div class="panel-heading">
                         <h4 class="panel-title">Code <small>(<a href="./instruction-set.html" target="_blank" style="color: #337AB7">Instruction Set</a>)</small></h4>
                     </div>
+
                     <div class="panel-body">
+                      <div class="container">
+                        <div class="row">
+                          <div class="col-md-1">
+                      <button class="btn btn-default" onclick="download('text/plain')">Save file</button>
+                    </div><div class="col-md-4"><input class="btn btn-default" type="file" id="file-name" />
+                      </div><div class="col-md-3">  <button type="button" class="btn btn-default" ng-click="assemble()">Assemble</button></div>
+
+                      </div>
+                      </div>
+                      <br>
                         <form role="form">
+
                             <textarea id="sourceCode"
                                       class="form-control source-code"
                                       style="margin-bottom:5px;"
                                       rows="35"
                                       tab-support
                                       select-line
-                                      ng-model="code"></textarea>
-                            <button type="button" class="btn btn-default" ng-click="assemble()">Assemble</button>
+                                      ng-model="code"  ></textarea>
+
+
+
                         </form>
+                        <a href=""id="a"></a>
+
+
                     </div>
                 </div>
             </div>
@@ -105,6 +165,8 @@
                                          <small>{{ m | number:displayHex }}</small>
                                      </a>
                                  </div>
+                                 <!-- <div ><small>{{$index | number:displayHex}}</small>
+                                 <hr></div> -->
                             </div>
                         </div>
                         <p style="margin-top:5px;">
@@ -118,7 +180,7 @@
                                 <a ng-click="displayHex = true" ng-hide="displayHex">Hex</a>
                                 <a ng-click="displayHex = false" ng-show="displayHex">Decimal</a>
 								<br>
-								Register addressing: 
+								Register addressing:
                                 <span style="margin-left:5px;">A:</span>
                                 <a ng-click="displayA = true" ng-hide="displayA">Show</a>
                                 <a ng-click="displayA = false" ng-show="displayA">Hide</a>
@@ -161,9 +223,13 @@
             </div>
         </div>
         <hr style="margin-top:10px;margin-bottom:10px;"/>
-        <p><small>by Marco Schweighauser (2015) | MIT License | <a href="https://www.mschweighauser.com/make-your-own-assembler-simulator-in-javascript-part1/" target="_blank">Blog</a></small></p>
+        <p>forked  from Author : <a href="https://github.com/Schweigi/assembler-simulator" target="_blank"> Schweigi</a>  and modified  by : veera</small> </p>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.10/angular.min.js"></script>
     <script src="assets/asmsimulator.js"></script>
+    <script src="https://code.jquery.com/jquery-3.0.0.min.js"></script>
+  <script type="text/javascript">
+
+  document.getElementById('file-name').addEventListener('change', readSingleFile, false);</script>
 </body>
 </html>
