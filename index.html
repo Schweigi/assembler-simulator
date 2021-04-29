@@ -51,6 +51,16 @@
             <div class="col-lg-5 col-md-6">
                 <div class="panel panel-default">
                     <div class="panel-heading">
+                        <h4 class="panel-title">Input</h4>
+                    </div>
+                    <div class="panel-body source-code">
+                        <div style="float:left;" ng-repeat="i in inputSwitches() track by $index">
+                            <span ng-click="setInputSwitch($index)" ng-class="{'input': true, 'input-on': i,'input-off': !i}">{{ $index }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
                         <h4 class="panel-title">Output</h4>
                     </div>
                     <div class="panel-body source-code">

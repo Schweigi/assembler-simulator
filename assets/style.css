@@ -13,6 +13,23 @@
     text-align: center;
 }
 
+.input {
+    display: inline-block;
+    width: 1.5em;
+    margin-right: 1px;
+    margin-bottom: 1px;
+    text-align: center;
+}
+
+.input-off {
+    background-color: #DFDFDF;
+}
+
+.input-on {
+    background-color: #5cb85c;
+    border-color: #4cae4c;
+}
+
 .instr-bg {
     background-color: #E6F3FF;
 }

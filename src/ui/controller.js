@@ -1,6 +1,7 @@
-app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'assembler', function ($document, $scope, $timeout, cpu, memory, assembler) {
+app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'input', 'assembler', function ($document, $scope, $timeout, cpu, memory, input, assembler) {
     $scope.memory = memory;
     $scope.cpu = cpu;
+    $scope.input = input;
     $scope.error = '';
     $scope.isRunning = false;
     $scope.displayHex = true;
@@ -21,6 +22,7 @@ app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'ass
     $scope.reset = function () {
         cpu.reset();
         memory.reset();
+        input.reset();
         $scope.error = '';
         $scope.selectedLine = -1;
     };
@@ -152,5 +154,21 @@ app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'ass
         } else {
             return '';
         }
+    };
+    
+    $scope.inputSwitches = function() {
+        var switches = [];
+        console.log(input.data);
+        for (var i = 0; i < input.data.length; i++) {
+            switches.push(input.data[i]);
+        }
+        return switches;
+    };
+
+    $scope.setInputSwitch = function (index) {
+        if(index >= input.data.length) {
+            throw "Error input out of bounds";
+        }
+        input.setBit(index);
     };
 }]);
