@@ -1230,7 +1230,44 @@ var app = angular.module('ASMSimulator', []);
     cpu.reset();
     return cpu;
 }]);
-;app.service('memory', [function () {
+;app.service('input', ['memory', function (memory) {
+    var input = {
+        data: Array(16),
+        reset: function(){
+            this.data.fill(false);
+        },
+        setBit : function(bit){
+            if (bit >= this.data.length) {
+                throw "Input access error: " + bit;
+            }
+
+            if(this.data[bit]){
+                this.data[bit] = false;
+            } else {
+                this.data[bit] = true;
+            }
+            
+            var byte = 0;
+            for (var i = 0; i < 8; ++i) {
+                if(this.data[i]){
+                    byte += Math.pow(2, i);
+                }
+            }
+            memory.store(255, byte);
+
+            byte = 0;
+            for (; i < 16; ++i) {
+                if(this.data[i]){
+                    byte += Math.pow(2, i - 8);
+                }
+            }
+            memory.store(254, byte);
+        }
+    };
+
+    input.reset();
+    return input;
+}]);;app.service('memory', [function () {
     var memory = {
         data: Array(256),
         lastAccess: -1,
@@ -1347,9 +1384,10 @@ var app = angular.module('ASMSimulator', []);
 
     return opcodes;
 }]);
-;app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'assembler', function ($document, $scope, $timeout, cpu, memory, assembler) {
+;app.controller('Ctrl', ['$document', '$scope', '$timeout', 'cpu', 'memory', 'input', 'assembler', function ($document, $scope, $timeout, cpu, memory, input, assembler) {
     $scope.memory = memory;
     $scope.cpu = cpu;
+    $scope.input = input;
     $scope.error = '';
     $scope.isRunning = false;
     $scope.displayHex = true;
@@ -1370,6 +1408,7 @@ var app = angular.module('ASMSimulator', []);
     $scope.reset = function () {
         cpu.reset();
         memory.reset();
+        input.reset();
         $scope.error = '';
         $scope.selectedLine = -1;
     };
@@ -1501,6 +1540,22 @@ var app = angular.module('ASMSimulator', []);
         } else {
             return '';
         }
+    };
+    
+    $scope.inputSwitches = function() {
+        var switches = [];
+        console.log(input.data);
+        for (var i = 0; i < input.data.length; i++) {
+            switches.push(input.data[i]);
+        }
+        return switches;
+    };
+
+    $scope.setInputSwitch = function (index) {
+        if(index >= input.data.length) {
+            throw "Error input out of bounds";
+        }
+        input.setBit(index);
     };
 }]);
 ;app.filter('flag', function() {
